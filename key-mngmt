@@ -1,0 +1,15 @@
+# Just tips for future key management
+# CA
+openssl genrsa -out ca/key.pem -des3 4096
+openssl req -new -x509 -key ca/key.pem -out ca/cert.pem -days 365 -config ca/ssl.cfg
+
+# Request
+openssl genrsa -out key 2048
+openssl req -new -key key -config ssl.cfg -out sign_me.pem
+
+openssl req -new -newkey rsa2048 -keyout client.key -out client_unsign.crt
+# signing
+openssl x509 -req -in sign_me.pem -CA ca/cert.pem -CAkey ca/key.pem \
+    -CAcreateserial -CAserial ca/ca.seq -days 100 -out cert.pem
+
+# It doesnt work yet
