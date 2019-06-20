@@ -1,0 +1,43 @@
+- hosts: test
+  remote_user: root
+  tasks:
+  - name: Check OS family
+    debug: var=ansible_os_family
+
+  - name: Install Apache Web Server
+    apt: 
+       name: apache2
+       state: latest
+    when: ansible_os_family == "Debian"
+
+  - name: Install Apache Web Server
+    pacman : 
+       name: apache2
+       state: latest
+    when: ansible_os_family == "Debian"
+
+# BLOCK/WHEN FOR DISTR
+
+# LOOPS
+#loop  with_fileglob
+
+# register - write result of shell comannd into var
+# debug: var/msg
+
+# j2 templates html-> j2 {{var}}. In hosts template: src=dest
+
+# extra-vars -e
+
+# include/import
+
+# delegate_to / run_once: true
+
+# ignore_errors: yes
+
+# failed_when: "'sada' in ..."   - filter kind of
+
+# any_errors_fatal: trye
+
+# ansible-vault   encrypt file
+# ansible-vault view/edit/create/rekey/encrypt/decrypt/encrypt_string      --ask-vault-pass/--vault-password-file
+
