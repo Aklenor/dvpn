@@ -1,0 +1,31 @@
+#!/bin/sh
+
+WORKDIR="$PWD/.."
+ID="$(cat /dev/urandom | tr -cd 'a-z0-9' | fold -w 4 | head -n1)"
+
+easyrsa build-server-full "server-$ID" nopass
+mkdir "$WORKDIR/openvpn/server-$ID"
+
+cp "$WORKDIR/easyrsa/pki/ca.crt" "$WORKDIR/openvpn/server-$ID/"
+cp "$WORKDIR/easyrsa/pki/issued/server-$ID.crt" "$WORKDIR/openvpn/server-$ID/server.crt"
+cp "$WORKDIR/easyrsa/pki/private/server-$ID.key" "$WORKDIR/openvpn/server-$ID/server.key"
+
+easyrsa build-client-full "client-$ID" nopass
+mkdir "$WORKDIR/openvpn/client-$ID"
+(
+echo "# client-$ID"
+cat "$WORKDIR/templates/client.ovpn"
+
+echo '<key>'
+cat "$WORKDIR/easyrsa/pki/issued/client-$ID.crt"
+echo '</key>'
+
+echo '<cert>'
+cat keys/${USER}.crt
+cat "$WORKDIR/easyrsa/pki/private/client-$ID.key"
+echo '</cert>'
+
+echo '<ca>'
+cat "$WORKDIR/easyrsa/pki/ca.crt"
+echo '</ca>'
+) > "$WORKDIR/openvpn/client-$ID/client.ovpn"
