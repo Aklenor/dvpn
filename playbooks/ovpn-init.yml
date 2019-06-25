@@ -1,0 +1,41 @@
+- hosts: test
+  remote_user: ansible
+  tasks:
+    
+    - name: install packets for OpenVPN 
+    #---vvv---Archlinux---vvv---#
+      block:
+      - name: install packet for Archlinux
+        become: yes
+        pacman:
+          name:
+            - openvpn
+          state: present
+      when: ansible_facts['distribution'] == 'Archlinux'
+    #---^^^---Archlinux---^^^---#
+
+    - name: copy OpenVPN keys and templates to VPS
+      become: yes
+      copy:
+        src: /home/berkut/projects/dvpn/openvpn/server-{{ansible_hostname}}/
+        dest: /etc/openvpn/server
+
+    - name: start open VPN servers
+      become: yes
+      systemd:
+        state: started
+        enabled: yes
+        name: openvpn-server@server.service
+
+    - name: start OpenVPN clients
+    #---vvv---Systemd---vvv---#
+      block: 
+      - name: for Systemd service manager
+        become: yes
+        local_action:
+          module: systemd
+          state: started
+          enabled: yes
+          name: ovpn-client@{{ ansible_hostname }}.service
+      when: ansible_service_mgr == 'systemd'
+    #---^^^---Systemd---^^^---#

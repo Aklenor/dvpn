@@ -1,0 +1,7 @@
+#!/bin/bash
+### setup easy-rsa
+# pacman -S easy-rsa
+# git clone https://github.com/OpenVPN/easy-rsa.git
+
+easyrsa init-pki
+easyrsa build-ca nopass
