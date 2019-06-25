@@ -1,0 +1,97 @@
+- hosts: test
+  remote_user: ansible
+  tasks:
+    
+    # -name: generate ovpn certificates and config files
+      # command:
+    #-----------Archlinux--------------
+    - name: Install ARCH openvpn
+      block:
+      - name: install packets for openvpn 
+        pacman:
+          name:
+            - openvpn
+          state: present
+      when: ansible_facts['distribution'] == 'Archlinux'
+
+    - name: copy ovpn keys and templates
+      become: yes
+      copy:
+        src: /home/berkut/projects/dvpn/openvpn/server-{{ansible_hostname}}/
+        dest: /etc/openvpn/server
+
+    # - name: generate Diffie-Hellman key ( could take a long time )
+    #   command: 
+
+    - name: start open VPN servers
+      become: yes
+      systemd:
+        state: started
+        enabled: yes
+        name: openvpn-server@server.service
+
+    # - name: copy client config files to system directory
+      
+    - name: start local openVPN client
+      delegate_to: localhost
+      become: yes
+      systemd: 
+        state: started
+        name: ovpn-client@{{ansible_hostname}}.service
+
+    #-------------------------
+
+    ##-----------Debian--------------
+    #- name: Install Debian sudo
+    #  block:
+    #  - name: install Debian packets for sudo
+    #    apt:
+    #      name:
+    #        - openvpn
+    #      state: present
+    #  when: ansible_facts['distribution'] == 'Ubuntu'
+
+    #- name: Make sure we have a 'wheel' group
+    #  group:
+    #    name: wheel
+    #    state: present  
+
+    #- name: Allow 'wheel' group to have passwordless sudo
+    #  lineinfile:
+    #    dest: /etc/sudoers
+    #    state: present
+    #    regexp: '^%wheel'
+    #    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    #    validate: visudo -cf %s  
+
+    #- name: add ansible user to VPN hosts
+    #  user: 
+    #    name: ansible
+    #    state: present
+    #    append: yes
+    #    create_home: yes
+    #    groups: wheel
+    #    generate_ssh_key: yes
+    #    ssh_key_type: ecdsa
+    #    ssh_key_bits: 521
+    
+    ## - name: allow wheel users use sudo
+    ##   template:
+    ##     src: ../templates/sudoers
+    ##     dest: /etc/sudoers
+    ##     validate: visudo -cf %s
+
+    #- name: copy ssh autorized public keys 
+    #  become_user: ansible
+    #  become: yes
+    #  template:
+    #    src: /home/demmy/.ssh/id_rsa.pub
+    #    dest: /home/ansible/.ssh/authorized_keys
+    #    backup: yes
+    #    mode: 0600
+
+    #- name: restart ssh daemon
+    #  service:
+    #    name: sshd
+    #    enabled: yes
+    #    state: restarted
