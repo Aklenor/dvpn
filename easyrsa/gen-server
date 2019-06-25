@@ -1,11 +1,16 @@
 #!/bin/sh
 
+if [ -z "$1" ];then
+    exit 1
+fi
+
 WORKDIR="$PWD/.."
 ID="$(cat /dev/urandom | tr -cd 'a-z0-9' | fold -w 4 | head -n1)"
+ID="$1"
 
 easyrsa build-server-full "server-$ID" nopass
 mkdir "$WORKDIR/openvpn/server-$ID"
-
+cp "$WORKDIR/templates/server.ovpn" "$WORKDIR/openvpn/server-$ID/"
 cp "$WORKDIR/easyrsa/pki/ca.crt" "$WORKDIR/openvpn/server-$ID/"
 cp "$WORKDIR/easyrsa/pki/issued/server-$ID.crt" "$WORKDIR/openvpn/server-$ID/server.crt"
 cp "$WORKDIR/easyrsa/pki/private/server-$ID.key" "$WORKDIR/openvpn/server-$ID/server.key"
@@ -17,12 +22,11 @@ echo "# client-$ID"
 cat "$WORKDIR/templates/client.ovpn"
 
 echo '<key>'
-cat "$WORKDIR/easyrsa/pki/issued/client-$ID.crt"
+cat "$WORKDIR/easyrsa/pki/public/client-$ID.key"
 echo '</key>'
 
 echo '<cert>'
-cat keys/${USER}.crt
-cat "$WORKDIR/easyrsa/pki/private/client-$ID.key"
+cat "$WORKDIR/easyrsa/pki/issued/client-$ID.crt"
 echo '</cert>'
 
 echo '<ca>'
