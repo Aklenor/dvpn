@@ -1,0 +1,12 @@
+- hosts: test
+  remote_user: ansible
+  tasks:
+    #-----------Archlinux--------------
+    - name: start OpenVPN clients
+      become: yes
+      local_action:
+        module: systemd
+        state: started
+        enabled: yes
+        name: ovpn-client@{{ ansible_hostname }}.service
+    #-------------------------
