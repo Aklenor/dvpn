@@ -1,5 +1,14 @@
-- hosts: test
-  remote_user: root
+- hosts: 
+    test
+    ubuntu
+  user: ansible
   tasks:
-    - name: Ping
-      ping:
+    - name: check if exists
+      local_action: stat path={{ inventory_dir }}/openvpn/server-{{ ansible_hostname }}
+      register: stat_ovpn_cfg
+
+    - name: generate certificates if not exists
+      local_action:
+        module: command ./gen-new {{ ansible_hostname }}
+        chdir: "{{ inventory_dir }}/easyrsa"
+      when: not stat_ovpn_cfg.stat.exists

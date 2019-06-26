@@ -1,0 +1,4 @@
+easyrsa/pki
+playbooks/test.*
+openvpn/server-*
+openvpn/client-*
