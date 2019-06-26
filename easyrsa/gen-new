@@ -10,7 +10,7 @@ ID="$1"
 
 easyrsa build-server-full "server-$ID" nopass
 mkdir "$WORKDIR/openvpn/server-$ID"
-cp "$WORKDIR/templates/server.ovpn" "$WORKDIR/openvpn/server-$ID/"
+cp "$WORKDIR/templates/server.ovpn" "$WORKDIR/openvpn/server-$ID/server.conf"
 cp "$WORKDIR/easyrsa/pki/ca.crt" "$WORKDIR/openvpn/server-$ID/"
 cp "$WORKDIR/easyrsa/pki/issued/server-$ID.crt" "$WORKDIR/openvpn/server-$ID/server.crt"
 cp "$WORKDIR/easyrsa/pki/private/server-$ID.key" "$WORKDIR/openvpn/server-$ID/server.key"
@@ -22,7 +22,7 @@ echo "# client-$ID"
 cat "$WORKDIR/templates/client.ovpn"
 
 echo '<key>'
-cat "$WORKDIR/easyrsa/pki/public/client-$ID.key"
+cat "$WORKDIR/easyrsa/pki/private/client-$ID.key"
 echo '</key>'
 
 echo '<cert>'
