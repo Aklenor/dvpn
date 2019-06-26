@@ -1,35 +1,35 @@
 - hosts: all
   remote_user: root
   tasks:
-    - name: Install ARCH sudo
-      block:
-      - name: install packets for sudo
-        pacman:
-          name:
-            - sudo
-          state: present
-    
-      - name: set sshd_config for VPS
-        template:
-          src: ../templates/sshd_config_arch
-          dest: /etc/ssh/sshd_config
-
+    #---vvv---SUDO---vvv---#
+    - name: install sudo for Archlinux
+      pacman:
+        name:
+          - sudo
+        state: present
       when: ansible_facts['distribution'] == 'Archlinux'
 
-    - name: Install Debian sudo
-      block:
-      - name: install Debian packets for sudo
-        apt:
-          name:
-            - sudo
-          state: present
-
-      - name: set sshd_config for VPS
-        template:
-          src: ../templates/sshd_config_deb
-          dest: /etc/ssh/sshd_config
-
+    - name: install sudo for Debian
+      apt:
+        name:
+          - sudo
+        state: present
       when: ansible_facts['distribution'] == 'Ubuntu'
+    #---^^^---SUDO---^^^---#
+
+    #---vvv---SSHD_config---vvv---#
+    - name: set sshd_config for VPS
+      template:
+        src: ../templates/sshd_config_arch
+        dest: /etc/ssh/sshd_config
+      when: ansible_facts['distribution'] == 'Archlinux'
+
+    - name: set sshd_config for VPS
+      template:
+        src: ../templates/sshd_config_deb
+        dest: /etc/ssh/sshd_config
+      when: ansible_facts['distribution'] == 'Ubuntu'
+    #---^^^---SSHD_config---^^^---#
 
     - name: Make sure we have a 'wheel' group
       group:
@@ -55,20 +55,16 @@
         ssh_key_type: ecdsa
         ssh_key_bits: 521
     
-    # - name: allow wheel users use sudo
-    #   template:
-    #     src: ../templates/sudoers
-    #     dest: /etc/sudoers
-    #     validate: visudo -cf %s
+    - name: get ssh public key
+      local_action: shell cat $HOME/.ssh/*.pub
+      register: pubkey
+      when: pubkey is not defined
 
     - name: copy ssh autorized public keys 
-      become_user: ansible
-      become: yes
-      template:
-        src: /home/demmy/.ssh/id_rsa.pub
-        dest: /home/ansible/.ssh/authorized_keys
-        backup: yes
-        mode: 0600
+      authorized_key:
+        key: "{{ pubkey.stdout }}"
+        user: ansible
+        state: present
 
     - name: restart ssh daemon
       service:

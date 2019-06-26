@@ -1,41 +1,61 @@
-- hosts: test
+- hosts: 
+    archlinux
+    ubuntu
   remote_user: ansible
   tasks:
     
-    - name: install packets for OpenVPN 
-    #---vvv---Archlinux---vvv---#
-      block:
-      - name: install packet for Archlinux
-        become: yes
-        pacman:
-          name:
-            - openvpn
-          state: present
+    #---vvv---OpenVPN install---vvv---#
+    - name: install openvpn for Archlinux
+      become: yes
+      pacman:
+        name:
+          - openvpn
+        state: present
       when: ansible_facts['distribution'] == 'Archlinux'
-    #---^^^---Archlinux---^^^---#
 
+    - name: install openvpn for Ubuntu
+      become: yes
+      apt:
+        name:
+          - openvpn
+        state: present
+      when: ansible_facts['distribution'] == 'Ubuntu'
+    #---^^^---OpenVPN install---^^^---#
+
+    #---vvv---OpenVPN configs---vvv---#
+    - name: check if exists
+      local_action: stat path={{ inventory_dir }}/openvpn/server-{{ ansible_hostname }}
+      register: stat_ovpn_cfg
+
+    - name: generate certificates if not exists
+      local_action:
+        module: command ./gen-new {{ ansible_hostname }}
+        chdir: "{{ inventory_dir }}/easyrsa"
+      when: not stat_ovpn_cfg.stat.exists
+    #---^^^---OpenVPN configs---^^^---#
+    
     - name: copy OpenVPN keys and templates to VPS
       become: yes
       copy:
         src: /home/berkut/projects/dvpn/openvpn/server-{{ansible_hostname}}/
         dest: /etc/openvpn/server
-
+    #---vvv---Start OpenVPN servers---vvv---#
     - name: start open VPN servers
       become: yes
       systemd:
         state: started
         enabled: yes
         name: openvpn-server@server.service
+      when: ansible_service_mgr == 'systemd'
+    #---^^^---Start OpenVPN servers---^^^---#
 
-    - name: start OpenVPN clients
     #---vvv---Systemd---vvv---#
-      block: 
-      - name: for Systemd service manager
-        become: yes
-        local_action:
-          module: systemd
-          state: started
-          enabled: yes
-          name: ovpn-client@{{ ansible_hostname }}.service
+    - name: start OpenVPN client for Systemd
+      become: yes
+      local_action:
+        module: systemd
+        state: started
+        enabled: yes
+        name: ovpn-client@{{ ansible_hostname }}.service
       when: ansible_service_mgr == 'systemd'
     #---^^^---Systemd---^^^---#
