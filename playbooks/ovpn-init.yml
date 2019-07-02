@@ -37,15 +37,14 @@
       local_action:
         module: replace
         path: "{{ inventory_dir }}/openvpn/client-{{ ansible_hostname }}/client.ovpn"
-        regexp: ".*remote\s*.*<address>.*"
+        regexp: ".*remote\ *<address>.*"
         replace: "remote {{ ansible_default_ipv4.address }}"
-
     #---^^^---generate OpenVPN configs---^^^---#
     
     - name: copy OpenVPN keys and templates to VPS
       become: yes
       copy:
-        src: /home/berkut/projects/dvpn/openvpn/server-{{ansible_hostname}}/
+        src: "{{ inventory_dir }}/openvpn/server-{{ansible_hostname}}/"
         dest: /etc/openvpn/server
     
     - name: generate Diffie-Hellman keys if not exists
@@ -67,19 +66,21 @@
     - name: start open VPN servers
       become: yes
       systemd:
-        state: started
+        state: restarted
         enabled: yes
+        daemon_reload: yes
         name: openvpn-server@server.service
       when: ansible_service_mgr == 'systemd'
     #---^^^---Start OpenVPN servers---^^^---#
 
-    #---vvv---Systemd---vvv---#
+    #---vvv---Start OpenVPN clients---vvv---#
     - name: start OpenVPN client for Systemd
       become: yes
       local_action:
         module: systemd
-        state: started
+        state: restarted
         enabled: yes
+        daemon_reload: yes
         name: openvpn-client@{{ ansible_hostname }}.service
       when: ansible_service_mgr == 'systemd'
-    #---^^^---Systemd---^^^---#
+    #---^^^---Start OpenVPN clients---^^^---#
