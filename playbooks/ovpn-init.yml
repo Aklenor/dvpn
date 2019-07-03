@@ -33,19 +33,43 @@
         chdir: "{{ inventory_dir }}/easyrsa"
       when: not stat_ovpn_cfg.stat.exists
 
+    - name: set uniq interface name
+      local_action:
+        module: replace
+        path: "{{ inventory_dir }}/openvpn/client-{{ ansible_hostname }}/client.ovpn"
+        regexp: "^\ *dev\ .*"
+        replace: "dev tun{{  groups['all'].index(inventory_hostname) }}"
+
     - name: add remote address to configs
       local_action:
         module: replace
         path: "{{ inventory_dir }}/openvpn/client-{{ ansible_hostname }}/client.ovpn"
         regexp: ".*remote\ *<address>.*"
         replace: "remote {{ ansible_default_ipv4.address }}"
+
     #---^^^---generate OpenVPN configs---^^^---#
-    
-    - name: copy OpenVPN keys and templates to VPS
-      become: yes
+    - name: copy OpenVPN keys to VPS 
+      become: yes 
       copy:
-        src: "{{ inventory_dir }}/openvpn/server-{{ansible_hostname}}/"
-        dest: /etc/openvpn/server
+        src: "{{ inventory_dir }}/openvpn/server-{{ ansible_hostname }}/{{ item }}"
+        dest: /etc/openvpn/server/
+      with_items:
+        - "ca.crt"
+        - "server.crt"
+        - "server.key"
+
+    - name: copy OpenVPN config to VPS 
+      become: yes 
+      template:
+        src: "{{ inventory_dir }}/openvpn/server-{{ ansible_hostname }}/server.conf"
+        dest: "/etc/openvpn/server/server.conf"
+
+    - name: copy OpenVPN client config to VPS 
+      become: yes 
+      template:
+        src: "{{ inventory_dir }}/templates/DEFAULT"
+        dest: "/etc/openvpn/server/ccd/"
+
     
     - name: generate Diffie-Hellman keys if not exists
       become: yes
@@ -57,7 +81,7 @@
     - name: copy OpenVPN client configs to system directory
       become: yes
       local_action:
-        module: copy
+        module: template
         src: "{{ inventory_dir }}/openvpn/client-{{ ansible_hostname }}/client.ovpn"
         dest: /etc/openvpn/client/{{ ansible_hostname }}.conf
         force: yes

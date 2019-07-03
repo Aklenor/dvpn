@@ -1,0 +1,6 @@
+# Legal options:
+# push
+# push-reset
+# push-remove
+# iroute
+ifconfig-push 10.0.0.{{ groups['all'].index(inventory_hostname)*4+2 }} 10.0.0.{{ groups['all'].index(inventory_hostname)*4+1 }}
