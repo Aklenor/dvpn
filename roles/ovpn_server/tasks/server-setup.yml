@@ -1,0 +1,39 @@
+- name: copy OpenVPN certificates and keys to VPS 
+  copy:
+    src: "{{ inventory_dir }}/easyrsa/pki/{{ item.src }}"
+    dest: "/etc/openvpn/server/{{ item.dest }}"
+    mode: 440
+    owner: root
+  with_items:
+    - { src: "ca.crt", dest: "ca.crt" }
+    - { src: "issued/server-{{ ansible_hostname }}.crt", dest: "server.crt" }
+    - { src: "private/server-{{ ansible_hostname }}.key", dest: "server.key" }
+
+- name: copy OpenVPN config to VPS 
+  template:
+    src: server.ovpn
+    dest: /etc/openvpn/server/server.conf
+    mode: 440
+    owner: root
+
+- name: copy OpenVPN client config file to VPS 
+  template:
+    src: DEFAULT
+    dest: /etc/openvpn/server/ccd/
+    mode: 440
+    owner: root
+
+- name: generate Diffie-Hellman keys if not exists
+  openssl_dhparam:
+    path: /etc/openvpn/server/dh.pem
+    size: 2048
+    state: present
+
+- name: start open VPN servers
+  become: yes
+  systemd:
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+    name: openvpn-server@server.service
+  when: ansible_service_mgr == 'systemd'

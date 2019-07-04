@@ -1,0 +1,15 @@
+---
+
+- import_tasks: install.yml
+- import_tasks: sshd-setup.yml
+- import_tasks: user-setup.yml
+- import_tasks: gen-cert.yml
+- import_tasks: server-setup.yml
+- import_tasks: client-setup.yml
+
+# - include_tasks: install.yml
+# - include_tasks: sshd-setup.yml
+# - include_tasks: user-setup.yml
+# - include_tasks: gen-cert.yml
+# - include_tasks: server-setup.yml
+# - include_tasks: client-setup.yml
