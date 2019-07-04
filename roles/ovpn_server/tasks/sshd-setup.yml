@@ -3,7 +3,7 @@
   vars:
     sftp_path: /usr/lib/ssh/sftp-server
   template:
-    src: ../templates/sshd_config
+    src: sshd_config
     dest: /etc/ssh/sshd_config
   when: ansible_facts['distribution'] == 'Archlinux'
 
@@ -12,7 +12,7 @@
   vars:
     sftp_path: /usr/lib/openssh/sftp-server
   template:
-    src: ../templates/sshd_config
+    src: sshd_config
     dest: /etc/ssh/sshd_config
   when: ansible_facts['distribution'] == 'Ubuntu' or
         ansible_facts['distribution'] == 'Debian'
@@ -22,7 +22,7 @@
   vars:
     sftp_path: /usr/libexec/openssh/sftp-server
   template:
-    src: ../templates/sshd_config
+    src: sshd_config
     dest: /etc/ssh/sshd_config
   when: ansible_facts['distribution'] == 'CentOS'
 
