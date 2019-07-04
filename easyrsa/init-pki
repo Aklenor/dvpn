@@ -5,3 +5,4 @@
 
 easyrsa init-pki
 easyrsa build-ca nopass
+easyrsa build-client-full "client" nopass
