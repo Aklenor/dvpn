@@ -1,8 +1,7 @@
 
 #ansible_python_interpreter="/usr/bin/env python"
+    # 10.1.1.242
 [test]
-    10.1.1.242
-[archlinux]
     10.1.1.242 
-[ubuntu]
     10.1.1.243
+    10.1.1.244

@@ -1,3 +1,4 @@
+
 #	$OpenBSD: sshd_config,v 1.103 2018/04/09 20:41:22 tj Exp $
 
 # This is the sshd server system-wide configuration file.  See
@@ -106,7 +107,7 @@ PrintMotd no # pam does that
 #Banner none
 
 # override default of no subsystems
-Subsystem	sftp	/usr/lib/openssh/sftp-server
+Subsystem	sftp    {{ sftp_path }}
 
 # Example of overriding settings on a per-user basis
 #Match User anoncvs

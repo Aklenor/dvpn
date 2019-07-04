@@ -1,25 +1,15 @@
-- hosts: 
-    archlinux
-    ubuntu
+- hosts:
+   all
   remote_user: ansible
   tasks:
     
     #---vvv---OpenVPN install---vvv---#
     - name: install openvpn for Archlinux
       become: yes
-      pacman:
+      package:
         name:
           - openvpn
         state: present
-      when: ansible_facts['distribution'] == 'Archlinux'
-
-    - name: install openvpn for Ubuntu
-      become: yes
-      apt:
-        name:
-          - openvpn
-        state: present
-      when: ansible_facts['distribution'] == 'Ubuntu'
     #---^^^---OpenVPN install---^^^---#
 
     #---vvv---generate certificates---vvv---#
