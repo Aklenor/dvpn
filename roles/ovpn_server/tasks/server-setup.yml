@@ -32,8 +32,8 @@
 - name: start open VPN servers
   become: yes
   systemd:
+    name: openvpn-server@server.service
     state: restarted
     enabled: yes
     daemon_reload: yes
-    name: openvpn-server@server.service
   when: ansible_service_mgr == 'systemd'
