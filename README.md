@@ -18,7 +18,7 @@ In order to perform penetration testing, there is a need to conduct aggressive s
 
 To avoid banning of external gateway IP address VPS servers should be used. The egress network traffic can be managed in such a way that it will be routed through different VPSs and source IP addresses will not be the same.
 
-![](20tIAMb.png)
+![](structure.png)
 
 ### Solution architecture
 
