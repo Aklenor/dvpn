@@ -1,0 +1,34 @@
+- name: set VPS sshd_config for Archlinux
+  remote_user: root
+  vars:
+    sftp_path: /usr/lib/ssh/sftp-server
+  template:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+  when: ansible_facts['distribution'] == 'Archlinux'
+
+- name: set VPS sshd_config for Debian
+  remote_user: root
+  vars:
+    sftp_path: /usr/lib/openssh/sftp-server
+  template:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+  when: ansible_facts['distribution'] == 'Ubuntu' or
+        ansible_facts['distribution'] == 'Debian'
+
+- name: set VPS sshd_config for CentOS
+  remote_user: root
+  vars:
+    sftp_path: /usr/libexec/openssh/sftp-server
+  template:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+  when: ansible_facts['distribution'] == 'CentOS'
+
+- name: restart ssh daemon
+  remote_user: root
+  service:
+    name: sshd
+    enabled: yes
+    state: restarted

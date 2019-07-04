@@ -1,0 +1,7 @@
+- name: install sudo
+  remote_user: root
+  package:
+    name:
+      - sudo
+      - openvpn
+    state: present
