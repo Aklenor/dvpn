@@ -1,14 +1,12 @@
-- hosts:
-    vps
-  tags:
-    route
+- hosts: all
+  remote_user: root
   tasks:
-    net_static_route:
-      prefix: {{ source }}
-      mask: 255.255.255.255
-      next_hop: tun0
-    local_action:
-      module: net_static_route
-      prefix: {{ destination }}
-      mask: 255.255.255.255
-      next_hop: tun{{ groups['vps'].index(inventory_hostname) }} 
+
+    - name: set route on VPS
+      command: ip route add "{{ source }}" dev tun0
+
+    - name: set local route
+      become: yes
+      local_action:
+        module: command ip route add "{{ destination }}" dev "tun{{ groups['vps'].index(inventory_hostname) }}"
+ 

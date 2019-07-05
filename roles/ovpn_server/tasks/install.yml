@@ -1,7 +1,15 @@
 - name: install packages
   remote_user: root
+  vars:
+    nm:
+      pacman: NetworkManager
+      aptitude: network-manager
+
   package:
     name:
       - sudo
       - openvpn
+      - {{ nm[ {{ 
     state: present
+  tags: 
+    install
