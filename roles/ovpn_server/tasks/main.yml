@@ -6,6 +6,7 @@
 - import_tasks: user-setup.yml
 - import_tasks: gen-cert.yml
 - import_tasks: server-setup.yml
+- import_tasks: nat.yml
 - import_tasks: client-setup.yml
 
 # - include_tasks: install.yml
