@@ -1,0 +1,14 @@
+- hosts:
+    vps
+  tags:
+    route
+  tasks:
+    net_static_route:
+      prefix: {{ source }}
+      mask: 255.255.255.255
+      next_hop: tun0
+    local_action:
+      module: net_static_route
+      prefix: {{ destination }}
+      mask: 255.255.255.255
+      next_hop: tun{{ groups['vps'].index(inventory_hostname) }} 
