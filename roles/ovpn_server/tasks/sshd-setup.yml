@@ -1,0 +1,19 @@
+- name: set VPS sshd_config for Archlinux
+  remote_user: root
+  vars:
+    sftp_path:
+      Archlinux: /usr/lib/ssh/sftp-server
+      Ubuntu: /usr/lib/openssh/sftp-server
+      Debian: /usr/lib/openssh/sftp-server
+      CentOs: /usr/libexec/openssh/sftp-server
+  template:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+    backup: yes
+
+- name: restart ssh daemon
+  remote_user: root
+  service:
+    name: sshd
+    enabled: yes
+    state: restarted

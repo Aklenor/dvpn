@@ -1,8 +1,4 @@
-
-#ansible_python_interpreter="/usr/bin/env python"
-[test]
-    10.1.1.242
-[archlinux]
-    10.1.1.242 
-[ubuntu]
-    10.1.1.243
+[vps]
+archlinux ansible_ssh_host=10.1.1.242
+ubuntu ansible_ssh_host=10.1.1.243
+debian ansible_ssh_host=10.1.1.244
