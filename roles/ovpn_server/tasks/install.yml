@@ -9,7 +9,6 @@
     name:
       - sudo
       - openvpn
-      - "{{ nm[ ansible_pkg_mgr ] }}"
     state: present
   tags: 
     install
