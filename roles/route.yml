@@ -3,10 +3,13 @@
   tasks:
 
     - name: set route on VPS
-      command: ip route add "{{ source }}" dev tun0
+      script: "{{ inventory_dir }}/route.sh {{ source }} tun0" 
+      tags:
+        route
 
     - name: set local route
       become: yes
       local_action:
-        module: command ip route add "{{ destination }}" dev "tun{{ groups['vps'].index(inventory_hostname) }}"
- 
+        module: script "{{ inventory_dir }}/route.sh" "{{ destination }}" "tun{{ groups['vps'].index(inventory_hostname) }}" 
+      tags:
+        route
