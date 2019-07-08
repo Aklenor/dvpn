@@ -1,5 +1,10 @@
+#test.yml
 ---
-- hosts: localhost
-  remote_user: root
-  roles:
-    - ovpn_server
+- hosts: all
+  tasks:
+    - name: test
+      net_ping:
+        dest: '8.8.8.8'
+#  remote_user: root
+#  roles:
+#    - ovpn_server
