@@ -3,13 +3,13 @@
   vars:
     nm:
       pacman: NetworkManager
-      aptitude: network-manager
+      apt: network-manager
 
   package:
     name:
       - sudo
       - openvpn
-      - {{ nm[ {{ 
+      - "{{ nm[ ansible_pkg_mgr ] }}"
     state: present
   tags: 
     install
