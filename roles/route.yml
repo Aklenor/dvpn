@@ -1,15 +1,33 @@
+---
 - hosts: all
   remote_user: root
+  # You have to specify arguments 'source' and 'destination' in playbook command
+  # with --extra-vars, -e option:
+  # $ ansible-playbook -l some_VPS_host roles/route.yml -e "source=192.168.0.2 \
+  #                     destination=1.2.3.4/28"
   tasks:
-
     - name: set route on VPS
-      script: "{{ inventory_dir }}/route.sh {{ source }} tun0" 
-      tags:
-        route
+      # suppuse VPS always has only one OpenVPN server instance which will
+      # use tun0 interface
+      command: ip route add {{ source }} dev tun0
+      register: result
+      changed_when: result.rc == 0
+      # return code 2 means "File already exists"
+      failed_when: (result.rc != 0 ) and ( result.rc != 2)
 
-    - name: set local route
-      become: yes
+
+    - name: set route on IP-change server
       local_action:
-        module: script "{{ inventory_dir }}/route.sh" "{{ destination }}" "tun{{ groups['vps'].index(inventory_hostname) }}" 
-      tags:
-        route
+        module: command ip route add "{{ destination }}" dev "tun{{ groups['vps'].index(inventory_hostname) }}" table 1
+      register: result
+      changed_when: result.rc == 0
+      # return code 2 means "File already exists"
+      failed_when: (result.rc != 0 ) and ( result.rc != 2)
+
+    - name: set IP rule on IP-change server
+      local_action:
+        module: command ip rule add from "{{ source }}" table 1
+      register: result
+      changed_when: result.rc == 0
+      # return code 2 means "File already exists"
+      failed_when: (result.rc != 0 ) and ( result.rc != 2)
