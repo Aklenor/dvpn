@@ -4,4 +4,6 @@
 # push-remove
 # iroute
 ifconfig-push 10.0.0.{{ groups['all'].index(inventory_hostname)*4+2 }} 10.0.0.{{ groups['all'].index(inventory_hostname)*4+1 }}
-iroute 0.0.0.0 0.0.0.0
+iroute 10.0.0.0 255.0.0.0.0
+iroute 176.16.0.0 255.240.0.0.0
+iroute 192.168.0.0 255.255.0.0.0
