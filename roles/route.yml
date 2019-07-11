@@ -14,6 +14,7 @@
       changed_when: result.rc == 0
       failed_when: (result.rc != 0 ) and ( "File exists" not in result.stderr)
 
+    ###---vvv---IP route---vvv---###
     - name: check if IP route exists
       local_action:
         module: command ip route show "{{ destination }}" table 1
@@ -39,12 +40,14 @@
       register: result
       changed_when: result.rc == 0
       when: routes.stdout == ""  or if_name not in routes.stdout
+    ###---^^^---IP route---^^^---###
 
+    ###---vvv---IP rule---vvv---###
     - name: check if IP rule exists
       local_action:
         module: command ip rule list from "{{ source }}"
       register: rules
-      changed_when: rules.stdout == ""
+      changed_when: false
 
     - name: set IP rule on IP-change server
       become: yes
@@ -53,3 +56,4 @@
       register: result
       changed_when: result.rc == 0
       when: rules.stdout == ""
+      ###---^^^---IP rule---^^^---###
