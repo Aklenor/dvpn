@@ -14,14 +14,31 @@
       changed_when: result.rc == 0
       failed_when: (result.rc != 0 ) and ( "File exists" not in result.stderr)
 
+    - name: check if IP route exists
+      local_action:
+        module: command ip route show "{{ destination }}" table 1
+      register: routes
+      changed_when: false
+
+    - name: remove existed route on IP-change server
+      become: yes
+      vars:
+        if_name: "tun{{ groups['vps'].index(inventory_hostname) }}"
+      local_action:
+        module: command ip route del "{{ destination }}" table 1
+      register: removed
+      changed_when: removed.rc == 0
+      when: routes.stdout != "" and if_name not in routes.stdout 
 
     - name: set route on IP-change server
       become: yes
+      vars:
+        if_name: "tun{{ groups['vps'].index(inventory_hostname) }}"
       local_action:
-        module: command ip route add "{{ destination }}" dev "tun{{ groups['vps'].index(inventory_hostname) }}" table 1
+        module: command ip route add "{{ destination }}" dev {{ if_name }} table 1
       register: result
       changed_when: result.rc == 0
-      failed_when: (result.rc != 0 ) and ( "File exists" not in result.stderr)
+      when: routes.stdout == ""  or if_name not in routes.stdout
 
     - name: check if IP rule exists
       local_action:
@@ -35,5 +52,4 @@
         module: command ip rule add from "{{ source }}" table 1
       register: result
       changed_when: result.rc == 0
-      failed_when: (result.rc != 0 )
       when: rules.stdout == ""
