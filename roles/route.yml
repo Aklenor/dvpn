@@ -27,6 +27,7 @@
       local_action:
         module: command ip rule list from "{{ source }}"
       register: rules
+      changed_when: rules.stdout == ""
 
     - name: set IP rule on IP-change server
       become: yes
@@ -35,4 +36,4 @@
       register: result
       changed_when: result.rc == 0
       failed_when: (result.rc != 0 )
-      when: rules.out == ""
+      when: rules.stdout == ""
