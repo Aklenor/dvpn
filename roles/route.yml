@@ -16,6 +16,7 @@
 
 
     - name: set route on IP-change server
+      become: yes
       local_action:
         module: command ip route add "{{ destination }}" dev "tun{{ groups['vps'].index(inventory_hostname) }}" table 1
       register: result
@@ -28,6 +29,7 @@
       register: rules
 
     - name: set IP rule on IP-change server
+      become: yes
       local_action:
         module: command ip rule add from "{{ source }}" table 1
       register: result
