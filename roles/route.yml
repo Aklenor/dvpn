@@ -12,8 +12,7 @@
       command: ip route add {{ source }} dev tun0
       register: result
       changed_when: result.rc == 0
-      # return code 2 means "File already exists"
-      failed_when: (result.rc != 0 ) and ( result.rc != 2)
+      failed_when: (result.rc != 0 ) and ( "File exists" not in result.stderr)
 
 
     - name: set route on IP-change server
@@ -21,13 +20,17 @@
         module: command ip route add "{{ destination }}" dev "tun{{ groups['vps'].index(inventory_hostname) }}" table 1
       register: result
       changed_when: result.rc == 0
-      # return code 2 means "File already exists"
-      failed_when: (result.rc != 0 ) and ( result.rc != 2)
+      failed_when: (result.rc != 0 ) and ( "File exists" not in result.stderr)
+
+    - name: check if IP rule exists
+      local_action:
+        module: command ip rule list from "{{ source }}"
+      register: rules
 
     - name: set IP rule on IP-change server
       local_action:
         module: command ip rule add from "{{ source }}" table 1
       register: result
       changed_when: result.rc == 0
-      # return code 2 means "File already exists"
-      failed_when: (result.rc != 0 ) and ( result.rc != 2)
+      failed_when: (result.rc != 0 )
+      when: rules.out == ""
