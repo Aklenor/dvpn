@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/sw/PycharmProjects/dvpn/front_flask/venv"
+VIRTUAL_ENV=$(cd $(dirname "$BASH_SOURCE"); dirname `pwd`)
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

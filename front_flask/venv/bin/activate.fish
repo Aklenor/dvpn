@@ -29,7 +29,7 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/sw/PycharmProjects/dvpn/front_flask/venv"
+set -gx VIRTUAL_ENV $(cd $(dirname "$BASH_SOURCE"); dirname `pwd`)
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
