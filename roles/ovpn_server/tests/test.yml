@@ -1,10 +1,18 @@
 #test.yml
 ---
-- hosts: all
+- name: "wtf_play"
+  gather_facts: "no"
+  hosts: "all"
   tasks:
-    - name: test
-      net_ping:
-        dest: '8.8.8.8'
+    - action:
+        module: "ping"
+        data: "wtf"
+    - action:
+        module: "shell"
+        args: "ping -c 4 8.8.8.8 -i 0.2 | tail -n 2"
+#        module: "shell"
+#        args: "ls"
+#      register: "shell_out"
 #  remote_user: root
 #  roles:
 #    - ovpn_server

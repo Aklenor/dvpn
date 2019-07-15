@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% block content %}
+
+<script type="text/javascript">
+    var timer = function() {setTimeout(function(){ window.location.reload(); }, 5000);};
+    timer();
+</script>
+
+{% for vps_name, vps_state in results %}
+<li> {{vps_name}} {{vps_state}} </li>
+{% endfor %}
+
+{% endblock %}

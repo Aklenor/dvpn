@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% block content %}
+
+{% for res in results %}
+{{res}}
+{% endfor %}
+
+    <script type="text/javascript">
+        var subpage = function () {$.get("{{ url_for('get_vps', hostname=vps_name ) }}")};
+        subpage();
+    </script>
+{% endblock %}
+

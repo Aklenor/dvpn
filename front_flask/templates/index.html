@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% block content %}
+
+<script type="text/javascript">
+var timer = function() {setTimeout(function(){ window.location.reload(); }, 5000);};
+timer();
+</script>
+
+<h1> VPS online </h1>
+<table>
+{% for vps in results %}
+<TR>
+{% if vps.ansible_status.good %}
+    <TD class="c1"> <IMG src="../static/green.png"></TD>
+{% elif vps.ansible_status.not_good %}
+    <TD class="c1"> <IMG src="../static/red.png"></TD>
+{% else %}
+    <TD class="c1"> <IMG src="../static/black.png"></TD>
+{% endif %}
+{% if vps.ansible_status.good %}
+    <form action="/index/USETHIS" method="POST">
+        <TD class="c2"> <input type="submit" name="USETHIS" value="{{vps.name}}"></TD>
+    </form>
+{% else %}
+    <TD class="c2">{{vps.name}}</TD>
+{% endif %}
+<TD class="c3">{{vps.port}}</TD>
+<TD class="c4">{{vps.ip}}</TD>
+<TD class="c5">{{vps.ping}}</TD>
+<TD class="c6">{{vps.vpn_status}}</TD>
+<TD class="c7">{{vps.time_check}}</TD>
+</TR>
+{% endfor %}
+</table>
+
+{% endblock %}

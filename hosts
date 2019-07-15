@@ -1,5 +1,5 @@
 [vps]
-archlinux1 ansible_ssh_host=localhost ansible_ssh_user=sw ansible_ssh_pass=sdfuio
-archlinux2 ansible_ssh_host=10.1.1.242 ansible_ssh_user=root ansible_ssh_pass=123
-ubuntu ansible_ssh_host=10.1.1.243 ansible_ssh_user=root ansible_ssh_pass=123
-debian ansible_ssh_host=10.1.1.244 ansible_ssh_user=root ansible_ssh_pass=123
+archlinux1 ansible_ssh_host="localhost" ansible_ssh_user=sw ansible_ssh_pass=sdfuio
+archlinux2 ansible_ssh_host="192.168.0.16" ansible_ssh_user=root ansible_ssh_pass=123
+#ubuntu ansible_ssh_host=10.1.1.243 ansible_ssh_user=root ansible_ssh_pass=123
+#debian ansible_ssh_host=10.1.1.244 ansible_ssh_user=root ansible_ssh_pass=123
