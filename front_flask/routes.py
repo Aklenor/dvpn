@@ -79,7 +79,6 @@ def index():
 
 @app.route('/index/USETHIS', methods=['GET', 'POST'])
 def index_button():
-    print(123123123)
     ansible_playbook = '../roles/ovpn_server/playbook_to_reroute.yml'
 
     if not os.path.isfile(ansible_playbook):
