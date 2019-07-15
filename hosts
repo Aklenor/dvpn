@@ -1,4 +1,3 @@
 [vps]
-archlinux ansible_ssh_host=10.1.1.242
-ubuntu ansible_ssh_host=10.1.1.243
+ubuntu ansible_ssh_host=10.1.1.243 user=root
 debian ansible_ssh_host=10.1.1.244

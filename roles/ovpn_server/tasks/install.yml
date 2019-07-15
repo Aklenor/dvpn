@@ -1,7 +1,14 @@
 - name: install packages
   remote_user: root
+  vars:
+    nm:
+      pacman: NetworkManager
+      apt: network-manager
+
   package:
     name:
       - sudo
       - openvpn
     state: present
+  tags: 
+    install

@@ -1,5 +1,5 @@
 - hosts: 
-    test
+    vps
   remote_user: root
   roles:
     - ovpn_server
