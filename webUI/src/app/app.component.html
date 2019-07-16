@@ -1,25 +1,33 @@
 <div class='wrapper'>
-  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
-    <mat-icon>more_vert</mat-icon>
+
+    <div class="inner_wrapper">
+        <div class="menu">
+
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+    <mat-icon>sort</mat-icon> Menu
   </button>
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item routerLink='/routing'>
+
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item routerLink='/routing'>
       <mat-icon>send</mat-icon>
       <span>Routing table</span>
     </button>
-    <button mat-menu-item routerLink='/management'>
+                <button mat-menu-item routerLink='/management'>
       <mat-icon>create_new_folder</mat-icon>
       <span>VPS management</span>
     </button>
 
-    <button mat-menu-item routerLink='/monitoring'>
+                <button mat-menu-item routerLink='/monitoring'>
       <mat-icon>create_new_folder</mat-icon>
       <span>Monitoring</span>
     </button>
-  </mat-menu>
+            </mat-menu>
 
-  <mat-divider></mat-divider>
+            <a alt="Cyber security consulting company: incident investigation, it security audit, internet security software" class="logo" href="/" title="Group-IB - сyber security assessment and management">Group IB</a>
+            <div style="width: 75px;"></div>
+        </div>
 
-  <router-outlet></router-outlet>
-
+        <mat-divider></mat-divider>
+        <router-outlet></router-outlet>
+    </div>
 </div>

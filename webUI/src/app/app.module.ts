@@ -17,18 +17,22 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 
+import {MatButtonModule} from '@angular/material/button'; 
+
 
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; 
 import {MatTableModule} from '@angular/material/table'; 
 import {MatSortModule} from '@angular/material/sort'; 
-import {MatPaginatorModule} from '@angular/material/paginator'; 
+import {MatPaginatorModule} from '@angular/material/paginator';
+import { ParticlesComponent } from './particles/particles.component'; 
 
 @NgModule({
   declarations: [
     AppComponent,
     MonitoringComponent,
     IpRoutesComponent,
-    VpsManagementComponent
+    VpsManagementComponent,
+    ParticlesComponent
   ],
   imports: [
     BrowserModule,
@@ -41,6 +45,7 @@ import {MatPaginatorModule} from '@angular/material/paginator';
     MatPaginatorModule,
     MatTableModule,
     MatSortModule,
+    MatButtonModule,
     AppRoutingModule
   ],
   providers: [RequestsService],
