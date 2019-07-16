@@ -14,9 +14,11 @@ vps.get_vps_list()
 def health():
     return jsonify({"status":"ok","message":"I'm alive"}),200
 
-@app.route('/availablevps')
+@app.route('/availablevps', methods=['GET'])
 def getVpsList():
-    return jsonify(vps.servers_list), 200
+    response = jsonify(vps.servers_list)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 @app.route('/add_vps', methods=["POST"])
 def add_vps():
@@ -44,3 +46,4 @@ def add_route():
     # print(stdout)
     # print(stderr)
     # return stdout, stderr
+    #check git config
