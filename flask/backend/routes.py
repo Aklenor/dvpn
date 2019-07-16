@@ -12,15 +12,15 @@ vps.get_vps_list()
 
 @app.route('/')
 def health():
-    return {"status":"ok","message":"I'm alive"}
+    return jsonify({"status":"ok","message":"I'm alive"}),200
 
 @app.route('/availablevps')
 def getVpsList():
-    return vps.servers_list, 200
+    return jsonify(vps.servers_list), 200
 
 @app.route('/add_vps', methods=["POST"])
 def add_vps():
-    hotname = request.form.get('hostname')
+    hostname = request.form.get('hostname')
     params = request.form.get('params')
     vps.add_vps( hostname, params )
     print(params,"type: ",type(params))
