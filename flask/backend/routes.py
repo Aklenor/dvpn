@@ -12,7 +12,7 @@ vps.get_vps_list()
 
 @app.route('/')
 def health():
-    return {"status":"ok","message":"I'm alive"}
+    return jsonify({"status":"ok","message":"I'm alive"}),200
 
 @app.route('/availablevps')
 def getVpsList():
