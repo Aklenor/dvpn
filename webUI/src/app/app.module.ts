@@ -17,6 +17,12 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 
+
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; 
+import {MatTableModule} from '@angular/material/table'; 
+import {MatSortModule} from '@angular/material/sort'; 
+import {MatPaginatorModule} from '@angular/material/paginator'; 
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -31,6 +37,10 @@ import { MatDividerModule } from '@angular/material/divider';
     MatMenuModule,
     MatDividerModule,
     MatIconModule,
+    MatProgressSpinnerModule,
+    MatPaginatorModule,
+    MatTableModule,
+    MatSortModule,
     AppRoutingModule
   ],
   providers: [RequestsService],

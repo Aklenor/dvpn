@@ -5,3 +5,7 @@
 .mat-divider{
     margin: 20px 0;
 }
+
+.burger{
+    min-height: 50px;
+}
