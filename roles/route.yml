@@ -20,6 +20,8 @@
         module: command ip route show "{{ destination }}" table 1
       register: routes
       changed_when: false
+      failed_when: ("table does not exist" not in routes.stderr and routes.rc != 0 ) or (routes.rc != 0 )
+      # ignore_errors: yes
 
     - name: remove existed route on IP-change server
       become: yes

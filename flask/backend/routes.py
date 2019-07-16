@@ -5,7 +5,6 @@ from flask import request
 from flask import jsonify
 import os
 import sys
-import subprocess
 import vps
 
 ansible_playbook = 'roles/setup.yml'
@@ -19,12 +18,20 @@ def health():
 def getVpsList():
     return vps.servers_list, 200
 
+@app.route('/add_vps', methods=["POST"])
+def add_vps():
+    hotname = request.form.get('hostname')
+    params = request.form.get('params')
+    vps.add_vps( hostname, params )
+    print(params,"type: ",type(params))
+    return jsonify(status='ok',msg='test')
+
 @app.route('/add_route', methods=["POST"])
 def add_route():
+    src = request.remote_addr
     dst = request.form.get('destination')
-    host = request.form.get('vps')
-
-    return vps.add_route( dst, host )
+    hostname = request.form.get('hostname')
+    return vps.add_route( src, dst, hostname )
 
     # command = subprocess.Popen(['ansible-playbook',ansible_playbook],
     #             cwd='../',

@@ -4,12 +4,15 @@ from configparser import ConfigParser
 from flask import request, jsonify, json
 import urllib.request as UR
 import ipaddress
+import subprocess
+import os
 
 servers_list = {}
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+work_dir = os.path.abspath(SCRIPT_DIR+'/..')
+inventory_file = '/hosts'
 
 def read_config():
-    work_dir = '/home/berkut/projects/dvpn/'
-    inventory_file = 'hosts'
     inventory = ConfigParser(delimiters=' ')
     inventory.read_file(open(work_dir+inventory_file,'r'))
     servers = {}
@@ -39,15 +42,39 @@ def get_vps_list():
         servers_list[ hostname ]['interface'] = 'tun' + str(servers[ hostname ]['id'])
         servers_list[ hostname ]['vpn_ip'] = '10.0.0.' + str(servers[ hostname ]['id']*4+1)
     
-def add_route( destination, vps ):
+def add_route( srcIP, destIP, hostname ):
+    changeRoutePlaybook = 'roles/route.yml'
     try:
-        dst = ipaddress.ip_address(destination)
+        ipaddress.ip_address(destIP)
     except ValueError:
-        msg = '\'' + destination + '\' is Bad IP Address'
+        msg = '\'' + destIP + '\' is Bad IP Address'
         return jsonify(status='error', message=msg ), 400
-    if vps not in servers_list:
-        msg = '\'' + vps + '\' is Bad VPS hostname'
+    if hostname not in servers_list:
+        msg = '\'' + str(hostname) + '\' is Bad VPS hostname'
         return jsonify(status='error', message=msg ), 400
-    # TODO execute here ansible-playbook -l 
-    print('from: {} to {} via {}'.format(request.remote_addr, dst, vps))
-    return jsonify({'status':'ok', 'message':'route completed'}), 200
+
+    print('from: {} to {} via {}'.format(srcIP , destIP,
+        hostname))
+
+    rc = subprocess.call(
+            ['ansible-playbook', '-l ' + hostname,
+            '-e', 'source=' + srcIP + ' destination=' + destIP,
+            changeRoutePlaybook],
+            cwd=work_dir
+            )
+
+    if ( rc != 0 ):
+        return jsonify({ 'status':'error', 'message':'ansible-playbook return code: '+str(rc) }), 500
+    else:
+        return jsonify({'status':'ok', 'message':'route completed'}), 200
+
+def add_vps( hostname, parameters ):
+    InvFile = open(work_dir + inventory_file, 'r')
+    newInvFile = open(work_dir + inventory_file + 'test', 'w')
+    inventory = ConfigParser(delimiters=' ')
+    inventory.read_file(InvFile)
+    InvFile.close()
+    inventory.set('vps', hostname, parameters )
+    inventory.write(newInvFile)
+    newInvFile.close()
+
