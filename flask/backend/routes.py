@@ -24,9 +24,7 @@ def getVpsList():
 def add_vps():
     hostname = request.form.get('hostname')
     params = request.form.get('params')
-    vps.add_vps( hostname, params )
-    print(params,"type: ",type(params))
-    return jsonify(status='ok',msg='test')
+    return vps.add_vps( hostname, params )
 
 @app.route('/add_route', methods=["POST"])
 def add_route():

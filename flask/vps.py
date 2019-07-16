@@ -7,7 +7,7 @@ import ipaddress
 import subprocess
 import os
 
-servers_list = {}
+servers_list = []
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 work_dir = os.path.abspath(SCRIPT_DIR+'/..')
 inventory_file = '/hosts'
@@ -28,19 +28,26 @@ def read_config():
     return servers
 
 def getIpLocation(ip):
+    ip = str(ip)
     url = 'http://ipinfo.io/'+ip+'/json'
-    return json.load(UR.urlopen(url))
+    try:
+        return json.load(UR.urlopen(url))
+    except:
+        return {"status":"error"}
+
 
 # This function updates values in servers_list dictionary
 def get_vps_list():
     addressParameter='ansible_ssh_host'
     servers = read_config()
     for hostname in servers:
-        servers_list[ hostname ] = {}
-        servers_list[ hostname ]['ip'] =  servers[ hostname ][ addressParameter ]
-        servers_list[ hostname ]['ip_info'] = getIpLocation(servers[ hostname ][ addressParameter ])
-        servers_list[ hostname ]['interface'] = 'tun' + str(servers[ hostname ]['id'])
-        servers_list[ hostname ]['vpn_ip'] = '10.0.0.' + str(servers[ hostname ]['id']*4+1)
+        item = {}
+        item['hostname'] = hostname
+        item['ip'] =  servers[ hostname ].get( addressParameter )
+        item['ip_info'] = getIpLocation(servers[ hostname ].get( addressParameter ))
+        item['interface'] = 'tun' + str(servers[ hostname ].get('id'))
+        item['vpn_ip'] = '10.0.0.' + str(servers[ hostname ].get('id')*4+1)
+        servers_list.append(item)
     
 def add_route( srcIP, destIP, hostname ):
     changeRoutePlaybook = 'roles/route.yml'
@@ -69,12 +76,30 @@ def add_route( srcIP, destIP, hostname ):
         return jsonify({'status':'ok', 'message':'route completed'}), 200
 
 def add_vps( hostname, parameters ):
-    InvFile = open(work_dir + inventory_file, 'r')
-    newInvFile = open(work_dir + inventory_file + 'test', 'w')
+
+    PathInvFile = work_dir + inventory_file
+    PathInvFileTmp = work_dir + inventory_file + '.test'
+    
+    InvFile = open( PathInvFile, 'r')
+    InvFileTmp = open(PathInvFileTmp, 'w')
+
     inventory = ConfigParser(delimiters=' ')
     inventory.read_file(InvFile)
     InvFile.close()
-    inventory.set('vps', hostname, parameters )
-    inventory.write(newInvFile)
-    newInvFile.close()
 
+    inventory.set('vps', hostname, parameters )
+    inventory.write(InvFileTmp)
+    InvFileTmp.close()
+
+    command = [ 'ansible-inventory', '-i', PathInvFileTmp,
+                '--host='+hostname ]
+    rc = subprocess.call(command,cwd=work_dir,
+            stderr=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL)
+    print(rc)
+    if (rc != 0):
+        os.remove(PathInvFileTmp)
+        return jsonify({"status":"error","message":"wrong inventory parameters"})
+    else:
+        os.rename(PathInvFileTmp, PathInvFile)
+        return jsonify({"status":"ok","message":"new host added"}), 200
