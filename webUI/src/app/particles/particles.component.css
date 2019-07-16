@@ -1,0 +1,27 @@
+#particles-js {
+    width: 100%;
+    background-color: #ffffff;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.text {
+    position: absolute;
+    left: 50%;
+    top: 400px;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+.main-head,
+.second-head {
+    font-size: 46px;
+}
+
+.second-head {
+    font-size: 32px;
+}
