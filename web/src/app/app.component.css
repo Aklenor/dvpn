@@ -53,10 +53,3 @@ a,
     height: auto;
     border-radius: 0;
 }
-
-footer {
-    width: 100%;
-    max-width: 1170px;
-    margin: 0 auto;
-    font-family: 'Source Sans Pro', sans-serif;
-}

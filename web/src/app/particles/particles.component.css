@@ -25,3 +25,29 @@
 .second-head {
     font-size: 32px;
 }
+
+footer {
+    width: 100%;
+    max-width: 1170px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+.footer_contacts {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    margin: 15px;
+    margin-bottom: 35px;
+}
+
+.footer_block_cities {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer_icon_phone {
+    display: flex;
+    align-items: center;
+}
