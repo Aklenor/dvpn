@@ -7,27 +7,31 @@ import ipaddress
 import subprocess
 import os
 
-servers_list = []
+servers_dict = {}
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 work_dir = os.path.abspath(SCRIPT_DIR+'/..')
-inventory_file = '/hosts'
+Path2Inventory = work_dir+'/hosts'
 
+# read invtory file and return dict
 def read_config():
     inventory = ConfigParser(delimiters=' ')
-    inventory.read_file(open(work_dir+inventory_file,'r'))
-    servers = {}
-    ID = 0
+    file = open(Path2Inventory,'r')
+    inventory.read_file(file)
+    file.close()
 
+    VPS_dict = {}
+    ID = 0
     for hostname, params_str in inventory.items('vps'):
-        servers[ hostname ] = {}
-        servers[ hostname ]['id'] = ID
+        VPS_dict[ hostname ] = {}
+        VPS_dict[ hostname ]['id'] = ID
         for params in params_str.split():
             key, value = params.split('=')
-            servers[hostname][key]=value
+            VPS_dict[hostname][key]=value
         ID+=1
-    return servers
+    return VPS_dict
 
 def getIpLocation(ip):
+    # use ipinfo to get location of VPS server
     ip = str(ip)
     url = 'http://ipinfo.io/'+ip+'/json'
     try:
@@ -36,43 +40,48 @@ def getIpLocation(ip):
         return {"status":"error"}
 
 
-# This function updates values in servers_list dictionary
+# form servers_list to send it to Front
 def get_vps_list():
+    # this variable in 'inventory file' will be used as VPS's IP address
     addressParameter='ansible_ssh_host'
-    servers = read_config()
-    for hostname in servers:
+    
+    global servers_dict
+    VPS_dict = read_config()
+    for hostname in VPS_dict:
         item = {}
         item['hostname'] = hostname
-        item['ip'] =  servers[ hostname ].get( addressParameter )
-        item['ip_info'] = getIpLocation(servers[ hostname ].get( addressParameter ))
-        item['interface'] = 'tun' + str(servers[ hostname ].get('id'))
-        item['vpn_ip'] = '10.0.0.' + str(servers[ hostname ].get('id')*4+1)
-        servers_list.append(item)
-    
+        item['ip'] =  VPS_dict[ hostname ].get( addressParameter )
+        item['ip_info'] = getIpLocation(VPS_dict[ hostname ].get( addressParameter ))
+        item['interface'] = 'tun' + str(VPS_dict[ hostname ].get('id'))
+        item['vpn_ip'] = '10.0.0.' + str(VPS_dict[ hostname ].get('id')*4+1)
+        servers_dict[ hostname ] = item
+
 def add_route( srcIP, destIP, hostname ):
-    changeRoutePlaybook = 'roles/route.yml'
+    setRoutePlaybook = work_dir + '/roles/route.yml'
+
     try:
-        ipaddress.ip_address(destIP)
+        ipaddress.ip_network(destIP)
     except ValueError:
-        msg = '\'' + destIP + '\' is Bad IP Address'
+        msg = '\'' + destIP + '\' is bad IP address'
         return jsonify(status='error', message=msg ), 400
     if hostname not in servers_list:
-        msg = '\'' + str(hostname) + '\' is Bad VPS hostname'
+        msg = '\'' + str(hostname) + '\' is bad VPS hostname'
         return jsonify(status='error', message=msg ), 400
 
     print('from: {} to {} via {}'.format(srcIP , destIP,
         hostname))
 
     rc = subprocess.call(
-            ['ansible-playbook', '-l ' + hostname,
-            '-e', 'source=' + srcIP + ' destination=' + destIP,
-            changeRoutePlaybook],
+                ['ansible-playbook', '-l ' + hostname,
+                '-e', 'source=' + srcIP + ' destination=' + destIP,
+                setRoutePlaybook],
             cwd=work_dir
             )
 
     if ( rc != 0 ):
         return jsonify({ 'status':'error', 'message':'ansible-playbook return code: '+str(rc) }), 500
     else:
+        servers_dict[hostname]['routes'] = {'from':srcIP, 'to':destIP}
         return jsonify({'status':'ok', 'message':'route completed'}), 200
 
 def add_vps( hostname, parameters ):
