@@ -9,16 +9,16 @@
 
             <mat-menu #menu="matMenu">
                 <button mat-menu-item routerLink='/routing'>
-      <mat-icon>send</mat-icon>
+      <mat-icon>subdirectory_arrow_right</mat-icon>
       <span>Routing table</span>
     </button>
                 <button mat-menu-item routerLink='/management'>
-      <mat-icon>create_new_folder</mat-icon>
+      <mat-icon>add</mat-icon>
       <span>VPS management</span>
     </button>
 
                 <button mat-menu-item routerLink='/monitoring'>
-      <mat-icon>create_new_folder</mat-icon>
+      <mat-icon>visibility</mat-icon>
       <span>Monitoring</span>
     </button>
             </mat-menu>
@@ -29,5 +29,17 @@
 
         <mat-divider></mat-divider>
         <router-outlet></router-outlet>
+        <mat-divider></mat-divider>
     </div>
+
+    <footer>
+        Contact
+        <p>
+            <mat-icon>email</mat-icon> info@group-ib.com</p>
+        <p>
+            <mat-icon>call</mat-icon>
+            Singapore +65 3159-3798 </p>
+        <p>
+            <mat-icon>call</mat-icon> Moscow +7 495 984-33-64</p>
+    </footer>
 </div>
