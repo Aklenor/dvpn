@@ -40,16 +40,3 @@ def add_route():
     dst = request.form.get('destination')
     hostname = request.form.get('hostname')
     return vps.add_route( src, dst, hostname )
-
-    # command = subprocess.Popen(['ansible-playbook',ansible_playbook],
-    #             cwd='../',
-    #             stdout=subprocess.PIPE,
-    #             stderr=subprocess.STDOUT,
-    #             universal_newlines=True,) 
-    # stdout,stderr = command.communicate()
-    # command1 = subprocess.call("pwd")
-    # print(command1)
-    # print(stdout)
-    # print(stderr)
-    # return stdout, stderr
-    #check git config
