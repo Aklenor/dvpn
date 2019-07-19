@@ -14,7 +14,8 @@ tr.example-detail-row {
 }
 
 tr.example-element-row:not(.example-expanded-row):hover {
-    background: #777;
+    background: rgb(209, 209, 209);
+    cursor: pointer;
 }
 
 tr.example-element-row:not(.example-expanded-row):active {

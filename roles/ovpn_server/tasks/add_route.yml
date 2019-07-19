@@ -1,0 +1,9 @@
+---
+- name: set route on VPS
+  # suppuse VPS always has only one OpenVPN server instance which will
+  # use tun0 interface
+  command: ip route add {{ route.source }} dev tun0
+  register: result
+  changed_when: result.rc == 0
+  failed_when: (result.rc != 0 ) and ( "File exists" not in result.stderr)
+  tags: add_route
