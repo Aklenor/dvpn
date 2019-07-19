@@ -1,61 +1,9 @@
 ---
-- hosts: all
+- hosts: vps
   remote_user: root
   # You have to specify arguments 'source' and 'destination' in playbook command
   # with --extra-vars, -e option:
   # $ ansible-playbook -l some_VPS_host roles/route.yml -e "source=192.168.0.2 \
   #                     destination=1.2.3.4/28"
-  tasks:
-    - name: set route on VPS
-      # suppuse VPS always has only one OpenVPN server instance which will
-      # use tun0 interface
-      command: ip route add {{ source }} dev tun0
-      register: result
-      changed_when: result.rc == 0
-      failed_when: (result.rc != 0 ) and ( "File exists" not in result.stderr)
-
-    ###---vvv---IP route---vvv---###
-    - name: check if IP route exists
-      local_action:
-        module: command ip route show "{{ destination }}" table 1
-      register: routes
-      changed_when: false
-      failed_when: ("table does not exist" not in routes.stderr and routes.rc != 0 ) or (routes.rc != 0 )
-      # ignore_errors: yes
-
-    - name: remove existed route on IP-change server
-      become: yes
-      vars:
-        if_name: "tun{{ groups['vps'].index(inventory_hostname) }}"
-      local_action:
-        module: command ip route del "{{ destination }}" table 1
-      register: removed
-      changed_when: removed.rc == 0
-      when: routes.stdout != "" and if_name not in routes.stdout 
-
-    - name: set route on IP-change server
-      become: yes
-      vars:
-        if_name: "tun{{ groups['vps'].index(inventory_hostname) }}"
-      local_action:
-        module: command ip route add "{{ destination }}" dev {{ if_name }} table 1
-      register: result
-      changed_when: result.rc == 0
-      when: routes.stdout == ""  or if_name not in routes.stdout
-    ###---^^^---IP route---^^^---###
-
-    ###---vvv---IP rule---vvv---###
-    - name: check if IP rule exists
-      local_action:
-        module: command ip rule list from "{{ source }}"
-      register: rules
-      changed_when: false
-
-    - name: set IP rule on IP-change server
-      become: yes
-      local_action:
-        module: command ip rule add from "{{ source }}" table 1
-      register: result
-      changed_when: result.rc == 0
-      when: rules.stdout == ""
-      ###---^^^---IP rule---^^^---###
+  roles:
+    - role: ovpn_server

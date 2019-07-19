@@ -1,5 +1,6 @@
 todo
 test.*
 easyrsa/pki
+flask/venv
 openvpn/server-*
 openvpn/client-*
