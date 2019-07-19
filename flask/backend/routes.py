@@ -17,8 +17,7 @@ def health():
 
 @app.route('/availablevps', methods=['GET'])
 def getVpsList():
-    response = jsonify(vps.servers_dict)
-    return response
+    return jsonify(vps.get_vps_list())
 
 @app.route('/add_vps', methods=["POST"])
 def add_vps():
@@ -32,11 +31,12 @@ def add_vps():
 @app.route('/del_vps', methods=["POST"])
 def del_vps():
     hostname = request.form.get('hostname')
-    return vps.del_vps( hostname )
+    # return vps.del_vps( hostname )
+    return jsonify({"status":"tmp","message":"hostname '" + hostname + "' is deleted"}), 200
 
 @app.route('/add_route', methods=["POST"])
 def add_route():
     src = request.remote_addr
     dst = request.form.get('destination')
     hostname = request.form.get('hostname')
-    return vps.add_route( src, dst, hostname )
+    return jsonify({"status":"tmp","message":"route added from: "+ src+ " to:"+dst+ " via "+ hostname }), 200

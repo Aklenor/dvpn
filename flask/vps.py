@@ -159,6 +159,7 @@ def add_vps( hostname, parameters ):
 
     VPS_dict[hostname] = parameters
     VPS_dict[hostname]['host_id'] = len(VPS_dict)
+    fix_inventory()
 
     return jsonify({"status":"ok","message":"new host added"}), 200
 
@@ -175,3 +176,5 @@ def add_vps( hostname, parameters ):
     # else:
     #     os.rename(PathInvFileTmp, PathInvFile)
     #     return jsonify({"status":"ok","message":"new host added"}), 200
+
+# def add_vps( hostname, parameters ):
