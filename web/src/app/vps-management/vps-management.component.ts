@@ -32,6 +32,7 @@ export class VpsManagementComponent {
         arr.push(data[el]);
       }
       this.vps = arr;
+      console.log(this.vps)
       this.dataSource = new MatTableDataSource(this.vps);
     }
     )
@@ -39,4 +40,8 @@ export class VpsManagementComponent {
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
+
+  deleteVps(hostname){
+    console.log(hostname);
+    }
 }
