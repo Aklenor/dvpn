@@ -76,7 +76,7 @@ def get_vps_list():
         item['ip_info'] = getIpLocation(VPS_dict[ hostname ].get( addressParameter ))
         item['interface'] = VPS_dict[ hostname ].get('interface')
         item['vpn_ip'] = '10.0.0.' + str(VPS_dict[ hostname ].get('host_id')*4+1)
-        item['routes'] = VPS_dict[hostname].get( 'routes' )
+        item['routes'] = VPS_dict[hostname].get('routes')
         servers_dict[ hostname ] = item
     return servers_dict
 

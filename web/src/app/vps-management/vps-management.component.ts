@@ -19,7 +19,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 
 export class VpsManagementComponent {
 
-  vps: vpsList[];
+  vps: vpsList[] = [];
   displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'route'];
   dataSource;
 
