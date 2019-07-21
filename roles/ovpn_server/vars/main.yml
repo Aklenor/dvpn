@@ -1,2 +1,7 @@
 ---
 # vars file for ovpn_server
+packets:
+  - openvpn
+  - secure-delete
+  - sudo
+  - 

@@ -23,6 +23,7 @@ VPS_dict = inventory['all']['children']['vps']['hosts']
 
 fileInventory = work_dir+'/hosts.yml'
 setupPlaybook = work_dir+'/roles/setup.yml'
+deletePlaybook = work_dir+'/roles/delete.yml'
 
 # read invtory file to global var: inventory
 def read_inventory():
@@ -38,13 +39,27 @@ def read_inventory():
             return 
     VPS_dict = inventory['all']['children']['vps']['hosts']
 
+# set vars in inventory for vps group if they are not exists:
+#   'host_id' for all hosts
+#   'interface' based on 'host_id'
+#   'routes' as a list of dicts
 def fix_inventory():
     global VPS_dict
     ID = 0
     for hostname in VPS_dict: 
         VPS_dict[hostname]['host_id'] = ID
         VPS_dict[hostname]['interface'] = 'tun'+str(ID)
+        if type(VPS_dict[hostname].get('routes')) is not list:
+            VPS_dict[hostname]['routes'] = []
+        else:
+            uniq = []
+            for route in VPS_dict[hostname].get('routes'):
+                if (route not in uniq) and (route is not None):
+                    uniq.append(route)
+        VPS_dict[hostname]['routes'] = uniq
         ID += 1
+    check_vps()
+    write_inventory()
 
 def write_inventory():
     with open(fileInventory, 'w') as stream:
@@ -77,6 +92,7 @@ def get_vps_list():
         item['interface'] = VPS_dict[ hostname ].get('interface')
         item['vpn_ip'] = '10.0.0.' + str(VPS_dict[ hostname ].get('host_id')*4+1)
         item['routes'] = VPS_dict[hostname].get('routes')
+        item['state'] = VPS_dict[hostname].get('state')
         servers_dict[ hostname ] = item
     return servers_dict
 
@@ -153,6 +169,21 @@ def add_route( srcIP, destIP, hostname, description='' ):
         write_inventory()
         return jsonify({'status':'ok', 'message':'route completed'}), 200
 
+def check_vps( hostname='vps' ):
+    # check for availability to work with ansible
+    global VPS_dict
+    cmdAnsible = ['ansible', hostname,'-i',fileInventory, '-m',
+    'ping', '-o']
+    resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
+    out = resAnsible.stdout.split('\n')
+    out.remove('')
+    for line in out:
+        host, status = line.split(' |')
+        if 'SUCCESS' in status:
+            VPS_dict[host]['state'] = "available"
+        else:
+            VPS_dict[host]['state'] = "unreachable"
+    
 # wrong function rewrite ConfigParser to yaml!!!
 def add_vps( hostname, parameters ):
     # check if hostname is exists
@@ -164,22 +195,34 @@ def add_vps( hostname, parameters ):
 
     VPS_dict[hostname] = parameters
     VPS_dict[hostname]['host_id'] = len(VPS_dict)
-    fix_inventory()
+    VPS_dict[hostname]['interface'] ='tun'+str(VPS_dict[hostname].get('host_id'))
+    write_inventory()
+
+    check_vps(hostname)
 
     return jsonify({"status":"ok","message":"new host added"}), 200
 
-    # print(hostname, parameters)
-    # command = [ 'ansible-inventory', '-i', PathInvFileTmp,
-    #             '--host='+hostname ]
-    # rc = subprocess.call(command,cwd=work_dir,
-    #         stderr=subprocess.DEVNULL,
-    #         stdout=subprocess.DEVNULL)
-    # print(rc)
-    # if (rc != 0):
-    #     os.remove(PathInvFileTmp)
-    #     return jsonify({"status":"error","message":"wrong inventory parameters"})
-    # else:
-    #     os.rename(PathInvFileTmp, PathInvFile)
-    #     return jsonify({"status":"ok","message":"new host added"}), 200
+def del_vps( hostname ):
+    global VPS_dict
+    if hostname not in VPS_dict:
+        return jsonify({"status":"error",
+                        "message":"'" + hostname + "' no such host"}), 500
+    check_vps(hostname)
+    if VPS_dict[hostname]['state'] != 'available':
+        VPS_dict.pop(hostname)
+        return jsonify({'status':'ok', 'message':'VPS is removed'}), 200
 
-# def add_vps( hostname, parameters ):
+    cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),
+                deletePlaybook]
+    resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
+
+    if resAnsible.returncode != 0 :
+        print('Error during run command:', ' '.join(cmdAnsible),
+                    '\nRetrun Code: ', resAnsible.returncode,
+                    '\nstdout: ', resAnsible.stdout,
+                    '\nstderr: ', resAnsible.stderr)
+        return jsonify({ 'status':'error', 
+            'message': 'ansible-playbook return code: ' + str(resAnsible.returncode) }), 500
+    else:
+        VPS_dict.pop(hostname)
+        return jsonify({'status':'ok', 'message':'VPS is removed'}), 200

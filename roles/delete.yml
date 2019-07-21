@@ -1,0 +1,31 @@
+- hosts: vps
+  remote_user: root
+  tasks:
+    - name: delete openvpn configs
+      command: srm -r  /etc/openvpn
+    - name: delete ansible home
+      command: srm -r /home/ansible
+    - name: delete ansible user
+      user:
+        name: ansible
+        remove: yes
+    - name: disable IP forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '0'
+        state: present
+    - name: flush iptables NAT
+      iptables:
+        table: nat
+        flush: yes
+        chain: POSTROUTING 
+    - name: remove packets
+      remote_user: root
+      package:
+        name:
+          - sudo
+          - openvpn
+          - secure-delete
+        state: absent
+    # - name: delete logs
+    #   command: srm -r /var/log 

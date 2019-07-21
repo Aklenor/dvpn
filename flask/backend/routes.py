@@ -13,7 +13,7 @@ vps.fix_inventory()
 
 @app.route('/')
 def health():
-    return {"status":"ok","message":"I'm alive"}
+    return jsonify({"status":"ok","message":"I'm alive"})
 
 @app.route('/availablevps', methods=['GET'])
 def getVpsList():
@@ -33,8 +33,7 @@ def add_vps():
 @app.route('/del_vps', methods=["POST"])
 def del_vps():
     hostname = request.form.get('hostname')
-    # return vps.del_vps( hostname )
-    return jsonify({"status":"tmp","message":"hostname '" + hostname + "' is deleted"}), 200
+    return vps.del_vps( hostname )
 
 @app.route('/add_route', methods=["POST"])
 def add_route():
