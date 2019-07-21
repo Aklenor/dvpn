@@ -41,4 +41,6 @@ def add_route():
     src = request.remote_addr
     dst = request.form.get('destination')
     hostname = request.form.get('hostname')
-    return jsonify({"status":"tmp","message":"route added from: "+ src+ " to:"+dst+ " via "+ hostname }), 200
+    descr = request.form.get('description')
+    return vps.add_route(src, dst, hostname, descr)
+    # return jsonify({"status":"tmp","message":"route added from: "+ src+ " to:"+dst+ " via "+ hostname }), 200

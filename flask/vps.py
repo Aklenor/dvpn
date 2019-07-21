@@ -66,10 +66,9 @@ def getIpLocation(ip):
 # form servers_list to send it to Front
 def get_vps_list():
     # this variable in 'inventory file' will be used as VPS's IP address
-    global VPS_dict
+    # global inventory
     addressParameter='ansible_ssh_host'
     servers_dict = {}
-
     for hostname in VPS_dict:
         item = {}
         item['hostname'] = hostname
@@ -82,12 +81,17 @@ def get_vps_list():
     return servers_dict
 
 def add_route( srcIP, destIP, hostname, description='' ):
-    global VPS_dict
-    print(srcIP, destIP, hostname)
-    if srcIP is None or destIP is None or hostname is None:
-        return jsonify({ 'status':'error', 'message':'got null parameters check syntax' }), 500
+    # global VPS_dict
+    # print(srcIP, destIP, hostname)
+    try: ipaddress.ip_network(srcIP)
+    except ValueError:
+        return jsonify({ 'status':'error', 'message': "'"+ srcIP + "' is bad source IP" }), 500
+    try: ipaddress.ip_network(destIP)
+    except ValueError:
+        return jsonify({ 'status':'error', 'message': "'"+ destIP + "' is bad destination IP or subnet" }), 500
     if hostname not in VPS_dict:
-        return jsonify({ 'status':'error', 'message': '\'' + hostname + '\' is bad hostname' }), 500
+        return jsonify({ 'status':'error', 'message': "\'" + hostname + "' is bad hostname" }), 500
+
     # IP RULE on IPCS
     # check if rule already exists
     ipRuleList = subprocess.run(['ip','rule','list','table','1'], 
@@ -124,17 +128,18 @@ def add_route( srcIP, destIP, hostname, description='' ):
     host_params = VPS_dict[hostname]
     route = {'route': description, 'source': srcIP, 'destination': destIP }
     # add 'routes' variable as list if not exists
-    if host_params.get('routes') is None: 
-       host_params['routes']=[route]
-    host_params['routes'].append(route)
+    if type(host_params.get('routes')) is not list: 
+        host_params['routes']=[route]
+    else:
+        host_params['routes'].append(route)
 
     # write new inventory to file
-    write_inventory()
+    # write_inventory()
 
-    print(inventory)
     # IP ROUTE on VPS
+    AnsibleExtraVars = json.dumps(host_params)
     cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),'--tags=add_route',
-            setupPlaybook]
+            '--extra-vars', AnsibleExtraVars, setupPlaybook]
     resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
 
     if resAnsible.returncode != 0 :
@@ -145,7 +150,7 @@ def add_route( srcIP, destIP, hostname, description='' ):
         return jsonify({ 'status':'error', 
             'message': 'ansible-playbook return code: ' + str(resAnsible.returncode) }), 500
     else:
-        VPS_dict[hostname]['routes'] = {'from':srcIP, 'to':destIP}
+        write_inventory()
         return jsonify({'status':'ok', 'message':'route completed'}), 200
 
 # wrong function rewrite ConfigParser to yaml!!!
