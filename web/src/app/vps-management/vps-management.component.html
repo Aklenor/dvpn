@@ -42,14 +42,24 @@
         <ng-container matColumnDef="expandedDetail">
             <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
                 <div class="example-element-detail" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
-                    <div class="example-element-diagram" *ngFor="let el of element.routes">
-                        <div class="example-element-position"> {{el.destination }} </div>
-                        <div class="example-element-symbol"> {{el.route}} </div>
-                        <div class="example-element-name"> {{el.source}} </div>
-                        <div class="example-element-weight"> {{element.weight}} </div>
-                    </div>
-                    <div class="example-element-description">
-                        {{element.description}}
+
+                    <div class="example-element-diagram" *ngFor="let el of element.routes; index as i">
+                        <mat-card>
+                            <div class='inner_table'>
+                                <span><b>{{i+1}}</b></span>
+                                <span><p><b>Destination:</b></p> {{el.destination }} </span>
+                                <span><p><b>Source:</b></p> {{el.source }} </span>
+                                <span><p><b>Route:</b></p> {{el.route }} </span>
+                                <span class="inner_table_icons_btn"> 
+                                    <button mat-flat-button color="primary">
+                                         <button mat-icon-button aria-label="Example icon-button with a heart icon"> <mat-icon>text_format</mat-icon> </button>
+                                        </button>
+                                   </span>
+                                <span class="inner_table_icons_btn"> <button mat-flat-button color="primary">
+                                     <button mat-icon-button aria-label="Example icon-button with a heart icon"><mat-icon>delete</mat-icon></button>
+                                    </button></span>
+                            </div>
+                        </mat-card>
                     </div>
                 </div>
             </td>
