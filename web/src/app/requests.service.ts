@@ -20,5 +20,12 @@ export class RequestsService {
       // );
   }
 
+  getIpAddress (): Observable<any>{
+    return this.http.get(`http://ip-api.com/json`);
+  }
+
+  chooseVPS(hostname): Observable<any>{
+    return this.http.post(`${this.url}\chooseVPS`,hostname);
+  }
 
 }

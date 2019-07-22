@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Inject, Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { RequestsService } from '../requests.service';
 import { vpsList } from '../vpsList';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import {EditVpsModal} from './edit-vps-modal.component'
 
 @Component({
   selector: 'app-vps-management',
@@ -20,11 +22,11 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'edit', 'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'chooseVPS','edit', 'delete'];
   dataSource;
   isLoadingResults = true;
-
-  constructor(private http: RequestsService) { }
+  ipAddress: any;
+  constructor(private http: RequestsService, private _bottomSheet: MatBottomSheet) { }
 
   ngOnInit() {
     let arr = [];
@@ -36,10 +38,17 @@ export class VpsManagementComponent {
       console.log(this.vps)
       this.dataSource = new MatTableDataSource(this.vps);
       this.isLoadingResults = false;
-
     }
     )
+    this.http.getIpAddress().subscribe( data => { this.ipAddress=data });
   }
+
+  openBottomSheet(hostname): void {
+    this._bottomSheet.open(EditVpsModal,  {
+      data: hostname });
+  }
+
+
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
@@ -48,7 +57,14 @@ export class VpsManagementComponent {
     console.log(hostname);
   }
 
+  // OPTIONAL:
   editVps(hostname) {
     console.log(hostname);
+  }
+
+  chooseVPS(hostname){
+    this.http.chooseVPS({data:hostname}).subscribe(data => {
+      console.log(`Choose vps ${data}`);
+    })
   }
 }

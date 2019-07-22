@@ -8,7 +8,7 @@ import { MonitoringComponent } from './monitoring/monitoring.component';
 import { IpRoutesComponent } from './ip-routes/ip-routes.component';
 import { VpsManagementComponent } from './vps-management/vps-management.component';
 import { ParticlesComponent } from './particles/particles.component'; 
-
+import {EditVpsModal} from './vps-management/edit-vps-modal.component';
 import { HttpClientModule } from '@angular/common/http';
 import { RequestsService } from './requests.service';
 
@@ -25,7 +25,7 @@ import {MatCardModule} from '@angular/material/card';
 import {MatTableModule} from '@angular/material/table'; 
 import {MatProgressBarModule} from '@angular/material/progress-bar'; 
 import {MatToolbarModule} from '@angular/material/toolbar'; 
-
+import {MatBottomSheetModule} from '@angular/material/bottom-sheet'; 
 
 @NgModule({
   declarations: [
@@ -33,7 +33,8 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     MonitoringComponent,
     IpRoutesComponent,
     VpsManagementComponent,
-    ParticlesComponent
+    ParticlesComponent,
+    EditVpsModal
   ],
   imports: [
     BrowserModule,
@@ -50,10 +51,14 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     MatCardModule,
     MatTableModule,
     MatExpansionModule,
+    MatBottomSheetModule,
     MatButtonModule,
     AppRoutingModule
   ],
   providers: [RequestsService],
+  entryComponents: [
+    EditVpsModal
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
