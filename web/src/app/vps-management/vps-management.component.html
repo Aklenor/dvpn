@@ -6,7 +6,7 @@
 <mat-divider></mat-divider>
 <button class="btns_vps_main add_vps_btn" mat-button><mat-icon>add</mat-icon> Add VPS</button>
 <button class="btns_vps_main rent_vps_btn" mat-button><mat-icon>cloud_queue</mat-icon>  Rent VPS</button>
-<span class="btn_ip" *ngIf="ipAddress"> Your IP: {{ipAddress.query}} located in {{ipAddress.country}}</span>
+<span class="btn_ip" *ngIf="ipAddress"> IP: {{ipAddress.query}} / {{ipAddress.country}}</span>
 <mat-divider></mat-divider>
 
 <mat-progress-bar *ngIf="isLoadingResults" mode="indeterminate"></mat-progress-bar>
@@ -43,17 +43,23 @@
             <td mat-cell *matCellDef="let element"> {{element.state}} </td>
         </ng-container>
 
+        <!-- Configured Column -->
+        <ng-container matColumnDef="configured">
+            <th mat-header-cell *matHeaderCellDef> Configured </th>
+            <td mat-cell *matCellDef="let element"> {{element.configured}} </td>
+        </ng-container>
+
         <!-- Location -->
         <ng-container matColumnDef="location">
             <th mat-header-cell *matHeaderCellDef> Location </th>
-            <td mat-cell *matCellDef="let element"> {{element.ip_info.region}} - {{element.ip_info.country}} - {{element.ip_info.city}}
+            <td mat-cell *matCellDef="let element"> {{element.ip_info.country}} - {{element.ip_info.city}}
             </td>
         </ng-container>
 
         <!-- Button -->
         <ng-container matColumnDef="chooseVPS">
             <th mat-header-cell *matHeaderCellDef> </th>
-            <td mat-cell *matCellDef="let element"><button class="edit_outer_table_btn" mat-stroked-button (click)="chooseVPS(element.hostname)"><mat-icon>edit</mat-icon></button>
+            <td mat-cell *matCellDef="let element"><button class="choose_outer_table_btn" mat-stroked-button (click)="chooseVPS(element.hostname)"><mat-icon>play_for_work</mat-icon></button>
             </td>
         </ng-container>
 

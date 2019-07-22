@@ -22,7 +22,7 @@ import {EditVpsModal} from './edit-vps-modal.component'
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'chooseVPS','edit', 'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'chooseVPS','edit', 'delete'];
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
