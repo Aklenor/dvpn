@@ -83,5 +83,10 @@ tr.example-element-row:not(.example-expanded-row):active {
 
 .edit_outer_table_btn {
     color: #1976f1;
-    ;
+}
+
+.btn_ip {
+    float: right;
+    padding: 20px;
+    line-height: 36px;
 }

@@ -3,7 +3,7 @@
     <span class="second-head">Rent/add/edit/delete your servers</span>
 </div>
 
-<mat-progress-bar *ngIf="isLoadingResults" mode="buffer"></mat-progress-bar>
+<mat-progress-bar *ngIf="isLoadingResults" mode="indeterminate"></mat-progress-bar>
 
 <mat-accordion>
     <mat-expansion-panel *ngFor="let vps of dataRoutes">
