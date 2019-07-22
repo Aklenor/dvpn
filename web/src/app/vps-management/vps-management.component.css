@@ -1,5 +1,23 @@
 /* Structure */
 
+.text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: 'Source Sans Pro', sans-serif;
+    padding-bottom: 20px;
+}
+
+.main-head,
+.second-head {
+    font-size: 24px;
+}
+
+.second-head {
+    font-size: 16px;
+}
+
 table {
     width: 100%;
 }
@@ -45,4 +63,25 @@ tr.example-element-row:not(.example-expanded-row):active {
 
 .inner_table_icons_btn {
     align-self: center;
+}
+
+.btns_vps_main {
+    color: #3c3c3c;
+    padding: 20px;
+}
+
+
+/* 
+.add_vps_btn {
+    background: #2ecc71;
+    margin: 20px 0;
+} */
+
+.delete_outer_table_btn {
+    color: #E2574C;
+}
+
+.edit_outer_table_btn {
+    color: #1976f1;
+    ;
 }

@@ -20,8 +20,9 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'route'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'edit', 'delete'];
   dataSource;
+  isLoadingResults = true;
 
   constructor(private http: RequestsService) { }
 
@@ -34,6 +35,8 @@ export class VpsManagementComponent {
       this.vps = arr;
       console.log(this.vps)
       this.dataSource = new MatTableDataSource(this.vps);
+      this.isLoadingResults = false;
+
     }
     )
   }
@@ -41,7 +44,11 @@ export class VpsManagementComponent {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  deleteVps(hostname){
+  deleteVps(hostname) {
     console.log(hostname);
-    }
+  }
+
+  editVps(hostname) {
+    console.log(hostname);
+  }
 }
