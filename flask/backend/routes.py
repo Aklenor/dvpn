@@ -35,6 +35,13 @@ def del_vps():
     hostname = request.form.get('hostname')
     return vps.del_vps( hostname )
 
+@app.route('/edit_vps', methods=["POST"])
+def edit_vps():
+    content = request.get_json()
+    hostname = content.get('hostname')
+    parameters = content.get('params')
+    return vps.edit_vps( hostname , parameters )
+
 @app.route('/add_route', methods=["POST"])
 def add_route():
     src = request.remote_addr
@@ -42,4 +49,17 @@ def add_route():
     hostname = request.form.get('hostname')
     descr = request.form.get('description')
     return vps.add_route(src, dst, hostname, descr)
-    # return jsonify({"status":"tmp","message":"route added from: "+ src+ " to:"+dst+ " via "+ hostname }), 200
+
+# @app.route('/del_route', methods=["POST"])
+# def del_route():
+#     src = request.remote_addr
+#     dst = request.form.get('destination')
+#     hostname = request.form.get('hostname')
+#     descr = request.form.get('description')
+#     return vps.del_route(src, dst, hostname, descr)
+
+@app.route('/config_vps', methods=["POST"])
+def config_vps():
+    hostname = request.form.get('hostname')
+    vps.config_in_thread(hostname)
+    return jsonify({"status":"test","message":"configuring vps"})

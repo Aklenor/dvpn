@@ -1,3 +1,7 @@
+- name: add directory if its not exists
+  file:
+    path: "/etc/openvpn/server"
+    state: directory
 - name: copy OpenVPN certificates and keys to VPS 
   copy:
     src: "{{ inventory_dir }}/easyrsa/pki/{{ item.src }}"

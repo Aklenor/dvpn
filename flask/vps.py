@@ -3,6 +3,7 @@
 from configparser import ConfigParser
 import yaml
 from flask import request, jsonify, json
+from threading import Thread
 import urllib.request as UR
 import ipaddress
 import subprocess
@@ -49,10 +50,10 @@ def fix_inventory():
     for hostname in VPS_dict: 
         VPS_dict[hostname]['host_id'] = ID
         VPS_dict[hostname]['interface'] = 'tun'+str(ID)
+        uniq = []
         if type(VPS_dict[hostname].get('routes')) is not list:
             VPS_dict[hostname]['routes'] = []
         else:
-            uniq = []
             for route in VPS_dict[hostname].get('routes'):
                 if (route not in uniq) and (route is not None):
                     uniq.append(route)
@@ -82,7 +83,7 @@ def getIpLocation(ip):
 def get_vps_list():
     # this variable in 'inventory file' will be used as VPS's IP address
     # global inventory
-    addressParameter='ansible_ssh_host'
+    addressParameter='ansible_host'
     servers_dict = {}
     for hostname in VPS_dict:
         item = {}
@@ -93,6 +94,7 @@ def get_vps_list():
         item['vpn_ip'] = '10.0.0.' + str(VPS_dict[ hostname ].get('host_id')*4+1)
         item['routes'] = VPS_dict[hostname].get('routes')
         item['state'] = VPS_dict[hostname].get('state')
+        item['configured'] = VPS_dict[hostname].get('configured')
         servers_dict[ hostname ] = item
     return servers_dict
 
@@ -128,10 +130,12 @@ def add_route( srcIP, destIP, hostname, description='' ):
     # check if route already exists
     ipRouteList = subprocess.run(['ip','route','list','table','1'], 
                                 capture_output=True, text=True).stdout
+
+    interface = VPS_dict[hostname]['interface']
     # not quiet shure, maybe better to use regexp
-    if destIP +' dev '+ VPS_dict[hostname]['interface'] not in ipRouteList:
+    if destIP +' dev '+ interface not in ipRouteList:
         # add ip route on IPCS
-        cmdIpRouteAdd = ['sudo','ip','rule','add','from',srcIP,'to',destIP, 'table','1']
+        cmdIpRouteAdd = ['sudo','ip','route','add',destIP,'dev', interface, 'table','1']
         resIpRouteAdd = subprocess.run(cmdIpRouteAdd, capture_output=True, text=True)
         # check for errors
         if resIpRouteAdd.returncode != 0:
@@ -178,6 +182,9 @@ def check_vps( hostname='vps' ):
     out = resAnsible.stdout.split('\n')
     out.remove('')
     for line in out:
+        if ' |' not in line:
+            VPS_dict[host]['state'] = "unreachable"
+            continue
         host, status = line.split(' |')
         if 'SUCCESS' in status:
             VPS_dict[host]['state'] = "available"
@@ -189,6 +196,11 @@ def add_vps( hostname, parameters ):
     # check if hostname is exists
     # VPS_dict = inventory['all']['children']['vps']['hosts']
     global VPS_dict
+
+    if type(parameters) is not dict:
+        return jsonify({"status":"error",
+            "message":"parameters \'"+parameters+"\' is not a dictionary"}), 400
+
     if hostname in VPS_dict:
         return jsonify({"status":"error",
             "message":"host \'"+hostname+"\' already exists"}), 400
@@ -196,10 +208,13 @@ def add_vps( hostname, parameters ):
     VPS_dict[hostname] = parameters
     VPS_dict[hostname]['host_id'] = len(VPS_dict)
     VPS_dict[hostname]['interface'] ='tun'+str(VPS_dict[hostname].get('host_id'))
+    VPS_dict[hostname]['configured'] = 'no'
+    VPS_dict[hostname]['routes'] = []
     write_inventory()
 
     check_vps(hostname)
-
+    config_in_thread(hostname)
+    
     return jsonify({"status":"ok","message":"new host added"}), 200
 
 def del_vps( hostname ):
@@ -226,3 +241,52 @@ def del_vps( hostname ):
     else:
         VPS_dict.pop(hostname)
         return jsonify({'status':'ok', 'message':'VPS is removed'}), 200
+
+def edit_vps( hostname, parameters ):
+    global VPS_dict
+    # check if hostname is exists
+    if hostname not in VPS_dict:
+        return jsonify({"status":"error",
+            "message":"host \'"+hostname+"\' don't exists"}), 400
+
+    for parameter in parameters:
+        VPS_dict[hostname][parameter] = parameters.get(parameter)
+    write_inventory()
+    check_vps(hostname)
+
+    return jsonify({"status":"ok","message":"new host added"}), 200
+
+# PROBLEM: keep system routes and routes in inventory synced
+def configure_vps( hostname ):
+    hostname = str(hostname)
+    global VPS_dict
+    if hostname not in VPS_dict or not 'vps':
+        print( "'" + hostname + "' no such host" )
+        return {"status":"error",
+                        "message":"'" + hostname + "' no such host"}
+
+    if VPS_dict[hostname]['state'] != 'available':
+        print( "'" + hostname + "' host is unreachable" )
+        return {'status':'error', 'message':'VPS is unreachable'}
+
+    VPS_dict[hostname]['configured'] = 'in progress'
+    cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),
+                setupPlaybook]
+    resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
+
+    if resAnsible.returncode != 0 :
+        print('Error during run command:', ' '.join(cmdAnsible),
+              '\nRetrun Code: ',    resAnsible.returncode,
+              '\nstdout: ',         resAnsible.stdout,
+              '\nstderr: ',         resAnsible.stderr)
+        return { 'status':'error', 
+            'message': 'ansible-playbook return code: ' +
+            str(resAnsible.returncode) }
+    else:
+        VPS_dict[hostname]['configured'] = 'yes'
+        return {'status':'ok', 'message':'VPS is configured'}
+
+def config_in_thread(hostname):
+    global VPS_dict
+    cfgVPS = Thread(target=configure_vps, args=(hostname,))
+    cfgVPS.start()
