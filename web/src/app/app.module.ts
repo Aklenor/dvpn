@@ -20,13 +20,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button'; 
 import {MatFormFieldModule} from '@angular/material/form-field'; 
 import {MatInputModule} from '@angular/material';
-
-
+import {MatExpansionModule} from '@angular/material/expansion'; 
 import {MatCardModule} from '@angular/material/card'; 
-// import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; 
 import {MatTableModule} from '@angular/material/table'; 
-// import {MatSortModule} from '@angular/material/sort'; 
-// import {MatPaginatorModule} from '@angular/material/paginator';
+import {MatProgressBarModule} from '@angular/material/progress-bar'; 
+import {MatToolbarModule} from '@angular/material/toolbar'; 
+
 
 @NgModule({
   declarations: [
@@ -44,13 +43,13 @@ import {MatTableModule} from '@angular/material/table';
     MatDividerModule,
     MatIconModule,
     MatFormFieldModule,
+    MatToolbarModule,
     MatInputModule,
+    MatProgressBarModule,
     CommonModule,
     MatCardModule,
-    // MatProgressSpinnerModule,
-    // MatPaginatorModule,
     MatTableModule,
-    // MatSortModule,
+    MatExpansionModule,
     MatButtonModule,
     AppRoutingModule
   ],

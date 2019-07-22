@@ -1,0 +1,45 @@
+.example-element-diagram {
+    width: 100%;
+    /* margin: 8px 0; */
+}
+
+.inner_table {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.inner_table_icons_btn {
+    align-self: center;
+}
+
+.add_vps_btn {
+    background: #2ecc71;
+    margin: 20px 0;
+}
+
+.delete_inner_table_btn {
+    background-color: #E2574C;
+}
+
+.edit_inner_table_btn {
+    background-color: #7f8c8d;
+}
+
+.text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-family: 'Source Sans Pro', sans-serif;
+    padding-bottom: 20px;
+}
+
+.main-head,
+.second-head {
+    font-size: 24px;
+}
+
+.second-head {
+    font-size: 16px;
+}
