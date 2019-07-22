@@ -46,19 +46,17 @@ def read_inventory():
 #   'routes' as a list of dicts
 def fix_inventory():
     global VPS_dict
-    ID = 0
     for hostname in VPS_dict: 
-        VPS_dict[hostname]['host_id'] = ID
-        VPS_dict[hostname]['interface'] = 'tun'+str(ID)
-        uniq = []
+        if VPS_dict[hostname].get('host_id') is None:
+            VPS_dict[hostname]['host_id'] = getAvailableId()
+        VPS_dict[hostname]['interface'] = 'tun'+str(VPS_dict[hostname].get('host_id'))
         if type(VPS_dict[hostname].get('routes')) is not list:
             VPS_dict[hostname]['routes'] = []
-        else:
-            for route in VPS_dict[hostname].get('routes'):
-                if (route not in uniq) and (route is not None):
-                    uniq.append(route)
+        uniq = []
+        for route in VPS_dict[hostname].get('routes'):
+            if (route not in uniq) and (route is not None):
+                uniq.append(route)
         VPS_dict[hostname]['routes'] = uniq
-        ID += 1
     check_vps()
     write_inventory()
 
@@ -69,6 +67,12 @@ def write_inventory():
         except yaml.YAMLError as exc:
             print('Error while write to inventory file',
                     exc)
+
+def getAvailableId():
+    global VPS_dict
+    IDs = [VPS_dict[host].get('host_id') for host in VPS_dict]
+    print('print IDs',IDs)
+    return min( set(range(max(IDs)+2)) - set(IDs) )
 
 def getIpLocation(ip):
     # use ipinfo to get location of VPS server
@@ -205,8 +209,9 @@ def add_vps( hostname, parameters ):
         return jsonify({"status":"error",
             "message":"host \'"+hostname+"\' already exists"}), 400
 
+    id = getAvailableId()
     VPS_dict[hostname] = parameters
-    VPS_dict[hostname]['host_id'] = len(VPS_dict)
+    VPS_dict[hostname]['host_id'] = id
     VPS_dict[hostname]['interface'] ='tun'+str(VPS_dict[hostname].get('host_id'))
     VPS_dict[hostname]['configured'] = 'no'
     VPS_dict[hostname]['routes'] = []
@@ -284,6 +289,21 @@ def configure_vps( hostname ):
             str(resAnsible.returncode) }
     else:
         VPS_dict[hostname]['configured'] = 'yes'
+        return {'status':'ok', 'message':'VPS is configured'}
+
+def conf_all_vps():
+    cmdAnsible = ['ansible-playbook','-i',fileInventory,
+                setupPlaybook]
+    resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
+    if resAnsible.returncode != 0 :
+        print('Error during run command:', ' '.join(cmdAnsible),
+              '\nRetrun Code: ',    resAnsible.returncode,
+              '\nstdout: ',         resAnsible.stdout,
+              '\nstderr: ',         resAnsible.stderr)
+        return { 'status':'error', 
+            'message': 'ansible-playbook return code: ' +
+            str(resAnsible.returncode) }
+    else:
         return {'status':'ok', 'message':'VPS is configured'}
 
 def config_in_thread(hostname):

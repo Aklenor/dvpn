@@ -10,6 +10,7 @@ import vps
 ansible_playbook = 'roles/setup.yml'
 vps.read_inventory()
 vps.fix_inventory()
+vps.conf_all_vps()
 
 @app.route('/')
 def health():
@@ -17,7 +18,7 @@ def health():
 
 @app.route('/availablevps', methods=['GET'])
 def getVpsList():
-    response = jsonify(vps.get_vps_list())
+    response = jsonify(vps.VPS_dict)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
@@ -27,7 +28,7 @@ def add_vps():
         return jsonify({"status":"error","message":"request in not json"}), 400
     content = request.get_json()
     hostname = content.get('hostname')
-    params = content.get('params')
+    params = content.get('parameters')
     return vps.add_vps( hostname, params )
 
 @app.route('/del_vps', methods=["POST"])
@@ -39,7 +40,7 @@ def del_vps():
 def edit_vps():
     content = request.get_json()
     hostname = content.get('hostname')
-    parameters = content.get('params')
+    parameters = content.get('parameters')
     return vps.edit_vps( hostname , parameters )
 
 @app.route('/add_route', methods=["POST"])
