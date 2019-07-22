@@ -4,7 +4,7 @@
     name:
       - sudo
       - openvpn
-      - secure-delete
+      # - secure-delete
     state: present
   tags: 
     install
