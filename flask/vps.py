@@ -54,7 +54,7 @@ def fix_inventory():
         VPS_dict[hostname]['interface'] = 'tun'+str(VPS_dict[hostname].get('host_id'))
         # hostname
         if VPS_dict[hostname].get('hostname') is None:
-            VPS_dict[hostname][hostname] = hostname
+            VPS_dict[hostname]['hostname'] = hostname
 
         # IP_info
         vps_ip_address = VPS_dict[hostname].get('ansible_host')
