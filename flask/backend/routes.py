@@ -10,7 +10,8 @@ import vps
 ansible_playbook = 'roles/setup.yml'
 vps.read_inventory()
 vps.fix_inventory()
-vps.conf_all_vps()
+# vps.config_vps()
+print('ready to go')
 
 @app.route('/')
 def health():
