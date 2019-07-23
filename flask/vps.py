@@ -238,6 +238,7 @@ def add_vps( hostname, parameters ):
     VPS_dict[hostname]['interface'] ='tun'+str(VPS_dict[hostname].get('host_id'))
     VPS_dict[hostname]['configured'] = 'no'
     VPS_dict[hostname]['routes'] = []
+    fix_inventory()
     write_inventory()
 
     check_vps(hostname)
@@ -343,6 +344,6 @@ def config_vps(hostname='vps'):
     if hostname == 'vps':
         confTread = Thread(target=conf_all_vps)
     else:
-        confTread = Thread(target=configure_vps, args=(hostname,))
+        confTread = Thread(target=conf_one_vps, args=(hostname,))
 
     confTread.start()
