@@ -86,7 +86,7 @@ tr.example-element-row:not(.example-expanded-row):active {
 }
 
 .btn_ip {
-    font-family: 'DejaVu Sans', sans-serif;
+    font-family: 'DejaVu Sans';
     float: right;
     padding: 20px;
     line-height: 36px;

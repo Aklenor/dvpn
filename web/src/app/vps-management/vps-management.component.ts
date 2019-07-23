@@ -35,7 +35,8 @@ export class VpsManagementComponent {
         arr.push(data[el]);
       }
       this.vps = arr;
-      console.log(this.vps)
+    console.log(`edited`, this.vps);
+    console.log(`raw`, data);
       this.dataSource = new MatTableDataSource(this.vps);
       this.isLoadingResults = false;
     }

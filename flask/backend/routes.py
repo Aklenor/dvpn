@@ -18,9 +18,7 @@ def health():
 
 @app.route('/availablevps', methods=['GET'])
 def getVpsList():
-    response = jsonify(vps.VPS_dict)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return jsonify(vps.VPS_dict)
 
 @app.route('/add_vps', methods=["POST"])
 def add_vps():
