@@ -9,8 +9,6 @@ import vps
 
 ansible_playbook = 'roles/setup.yml'
 vps.read_inventory()
-vps.fix_inventory()
-# vps.config_vps()
 print('ready to go')
 
 @app.route('/')
@@ -47,10 +45,10 @@ def edit_vps():
 @app.route('/add_route', methods=["POST"])
 def add_route():
     src = request.remote_addr
-    dst = request.form.get('destination')
+    # dst = request.form.get('destination')
     hostname = request.form.get('hostname')
     descr = request.form.get('description')
-    return vps.add_route(src, dst, hostname, descr)
+    return vps.add_route(src, hostname )
 
 # @app.route('/del_route', methods=["POST"])
 # def del_route():

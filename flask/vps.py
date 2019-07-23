@@ -12,28 +12,18 @@ import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 work_dir = os.path.abspath(SCRIPT_DIR+'/..')
 
-inventory = {}
-inventory.setdefault('all', {'children':
-                                {'vps':
-                                    {'hosts':
-                                        {}
-                                    }
-                                }
-                            })
-VPS_dict = inventory['all']['children']['vps']['hosts']
+VPS_dict = {}
 
 fileInventory = work_dir+'/hosts.yml'
 setupPlaybook = work_dir+'/roles/setup.yml'
 deletePlaybook = work_dir+'/roles/delete.yml'
 
-# read invtory file to global var: inventory
+# read invtory file to global var: VPS_dict
 def read_inventory():
-    global inventory
     global VPS_dict
     with open(fileInventory, 'r') as stream:
         try:
-            inventory['all'] = yaml.safe_load(stream).get('all')
-            # inventory = yaml.safe_load(stream)
+            inventory = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print('Error while read inventory file\n',
                     exc)
@@ -45,34 +35,44 @@ def read_inventory():
 #   'hostname' necessary to parce it in frontend
 #   'interface' based on 'host_id'
 #   'routes' as a list of dicts
-def fix_inventory():
-    global VPS_dict
-    for hostname in VPS_dict: 
-        # ID
-        if VPS_dict[hostname].get('host_id') is None:
-            VPS_dict[hostname]['host_id'] = getAvailableId()
-        VPS_dict[hostname]['interface'] = 'tun'+str(VPS_dict[hostname].get('host_id'))
-        # hostname
-        if VPS_dict[hostname].get('hostname') is None:
-            VPS_dict[hostname]['hostname'] = hostname
+# def fix_inventory():
+#     global VPS_dict
+#     for hostname in VPS_dict: 
+#         # ID
+#         if VPS_dict[hostname].get('host_id') is None:
+#             VPS_dict[hostname]['host_id'] = getAvailableId()
+#         VPS_dict[hostname]['interface'] = 'tun'+str(VPS_dict[hostname].get('host_id'))
+#         # hostname
+#         if VPS_dict[hostname].get('hostname') is None:
+#             VPS_dict[hostname]['hostname'] = hostname
 
-        # IP_info
-        vps_ip_address = VPS_dict[hostname].get('ansible_host')
-        VPS_dict[hostname]['ip_info'] = getIpLocation(vps_ip_address)
+#         # IP_info
+#         vps_ip_address = VPS_dict[hostname].get('ansible_host')
+#         VPS_dict[hostname]['ip_info'] = getIpLocation(vps_ip_address)
 
-        # Routes
-        if type(VPS_dict[hostname].get('routes')) is not list:
-            VPS_dict[hostname]['routes'] = []
-        uniq = []
-        for route in VPS_dict[hostname].get('routes'):
-            if (route not in uniq) and (route is not None):
-                uniq.append(route)
-        VPS_dict[hostname]['routes'] = uniq
+#         # Routes
+#         if type(VPS_dict[hostname].get('routes')) is not list:
+#             VPS_dict[hostname]['routes'] = []
+#         uniq = []
+#         for route in VPS_dict[hostname].get('routes'):
+#             if (route not in uniq) and (route is not None):
+#                 uniq.append(route)
+#         VPS_dict[hostname]['routes'] = uniq
 
-    check_vps()
-    write_inventory()
+#     check_vps()
+#     write_inventory()
 
 def write_inventory():
+    global VPS_dict    
+
+    inventory = {}
+    inventory.setdefault('all', {'children':{'vps':{'hosts':{}}}})
+
+    # TODO rid of unnecessary data in VPS_dict
+    #   'hostname'?
+
+    inventory['all']['children']['vps']['hosts'] = VPS_dict
+
     with open(fileInventory, 'w') as stream:
         try:
             yaml.dump(inventory, stream, default_flow_style=False, allow_unicode=True)
@@ -82,6 +82,7 @@ def write_inventory():
 
 def getAvailableId():
     global VPS_dict
+
     IDs = [VPS_dict[host].get('host_id') for host in VPS_dict]
     print('print IDs',IDs)
     findMinFreeElem = min( set(range(max(IDs)+2)) - set(IDs) )
@@ -125,80 +126,125 @@ def getIpLocation(ip):
 #         servers_dict[ hostname ] = item
 #     return servers_dict
 
-def add_route( srcIP, destIP, hostname, description='' ):
-    # global VPS_dict
+def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
+
+    print(destIP)
+    global VPS_dict
+    route = {'route': description, 'source': srcIP, 'destination': destIP }
+
     # print(srcIP, destIP, hostname)
     try: ipaddress.ip_network(srcIP)
     except ValueError:
-        return jsonify({ 'status':'error', 'message': "'"+ srcIP + "' is bad source IP" }), 500
+        return jsonify({ 'status':'error', 'message': "'"+ srcIP + "' is bad source IP" }), 400
     try: ipaddress.ip_network(destIP)
     except ValueError:
-        return jsonify({ 'status':'error', 'message': "'"+ destIP + "' is bad destination IP or subnet" }), 500
+        return jsonify({ 'status':'error', 'message': "'"+ destIP + "' is bad destination IP or subnet" }), 400
     if hostname not in VPS_dict:
-        return jsonify({ 'status':'error', 'message': "\'" + hostname + "' is bad hostname" }), 500
+        return jsonify({ 'status':'error', 'message': "'" + hostname + "' is bad hostname" }), 400
+    # check if route exists
+    if route in VPS_dict[hostname].get('routes'):
+        return jsonify({ 'status':'ok', 'message': "'"+ route + "' already exists" }), 200
+
+    ###---vvv--- Functions ---vvv---###
 
     # IP RULE on IPCS
-    # check if rule already exists
-    ipRuleList = subprocess.run(['ip','rule','list','table','1'], 
-                                capture_output=True, text=True).stdout
-    # not quiet shure, maybe better to use regexp:
-    if 'from '+ srcIP +' to '+ destIP not in ipRuleList:
+    def setIpRule( srcIP, destIP ):
+        # check if rule already exists
+        ipRuleList = subprocess.run(['ip','rule','list','table','1'], 
+                                    capture_output=True, text=True).stdout
+
+        # not quiet shure, maybe better to use regexp:
+        if 'from '+ srcIP +' to '+ destIP in ipRuleList:
+            return {'status':'ok','message':"rule already exists"}
+
         # add ip rule on IPCS
         cmdIpRuleAdd = ['sudo','ip','rule','add','from',srcIP,'to',destIP, 'table','1']
         resIpRuleAdd = subprocess.run(cmdIpRuleAdd, capture_output=True, text=True)
-        # check for errors
+
+        message = ' '.join(['during command: ', ' '.join(cmdIpRuleAdd),
+                            '\nRetrun Code: ', str(resIpRuleAdd.returncode),
+                            '\nstdout: ', resIpRuleAdd.stdout,
+                            '\nstderr: ', resIpRuleAdd.stderr ])
+
         if resIpRuleAdd.returncode != 0:
-            print('Error during run command:', ' '.join(cmdIpRuleAdd),
-                    '\nRetrun Code: ', resIpRuleAdd.returncode,
-                    '\nstdout: ', resIpRuleAdd.stdout,
-                    '\nstderr: ', resIpRuleAdd.stderr)
+            return {'status':'error', 'message':message}
+        else:
+            return {'status':'ok','message':message}
     
     # IP ROUTE on IPCS
-    # check if route already exists
-    ipRouteList = subprocess.run(['ip','route','list','table','1'], 
-                                capture_output=True, text=True).stdout
+    def setIpRoute( destIP, interface ):
+        # check if route already exists
+        ipRouteList = subprocess.run(['ip','route','list','table','1'], 
+                                    capture_output=True, text=True).stdout
 
-    interface = VPS_dict[hostname]['interface']
-    # not quiet shure, maybe better to use regexp
-    if destIP +' dev '+ interface not in ipRouteList:
+        # interface = VPS_dict[hostname]['interface']
+
+        # not quiet shure, maybe better to use regexp
+        if destIP +' dev '+ interface in ipRouteList:
+            return {'status':'ok','message':"route already exists"}
+
         # add ip route on IPCS
         cmdIpRouteAdd = ['sudo','ip','route','add',destIP,'dev', interface, 'table','1']
         resIpRouteAdd = subprocess.run(cmdIpRouteAdd, capture_output=True, text=True)
-        # check for errors
-        if resIpRouteAdd.returncode != 0:
-            print('Error during run command:', ' '.join(cmdIpRouteAdd),
-                    '\nRetrun Code: ', resIpRouteAdd.returncode,
-                    '\nstdout: ', resIpRouteAdd.stdout,
-                    '\nstderr: ', resIpRouteAdd.stderr)
+        message = ''.join([ 'Error during run command: ', ' '.join(cmdIpRouteAdd),
+                            '\nRetrun Code: ', str(resIpRouteAdd.returncode),
+                            '\nstdout: ', resIpRouteAdd.stdout,
+                            '\nstderr: ', resIpRouteAdd.stderr ])
 
-    # add route to inventory
-    host_params = VPS_dict[hostname]
-    route = {'route': description, 'source': srcIP, 'destination': destIP }
-    # add 'routes' variable as list if not exists
-    if type(host_params.get('routes')) is not list: 
-        host_params['routes']=[route]
-    else:
-        host_params['routes'].append(route)
-
-    # write new inventory to file
-    # write_inventory()
+        if resIpRouteAdd.returncode == 0 or 'exists' in resIpRouteAdd.stderr:
+            return {'status':'ok','message':message}
+        else:
+            return {'status':'error', 'message':message}
 
     # IP ROUTE on VPS
-    AnsibleExtraVars = json.dumps(host_params)
-    cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),'--tags=add_route',
-            '--extra-vars', AnsibleExtraVars, setupPlaybook]
-    resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
+    def setVpsRoute( hostname, route ):
+        # get copy of VPS variables
+        host_params = VPS_dict[hostname]
+        host_params['routes'] = [ route ]
+        AnsibleExtraVars = json.dumps(host_params)
+        cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),'--tags=add_route',
+                '--extra-vars', AnsibleExtraVars, setupPlaybook]
+        resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
 
-    if resAnsible.returncode != 0 :
-        print('Error during run command:', ' '.join(cmdAnsible),
-                    '\nRetrun Code: ', resAnsible.returncode,
-                    '\nstdout: ', resAnsible.stdout,
-                    '\nstderr: ', resAnsible.stderr)
-        return jsonify({ 'status':'error', 
-            'message': 'ansible-playbook return code: ' + str(resAnsible.returncode) }), 500
+        # add ip route on IPCS
+        message = ''.join([ 'Error during run command: ', ' '.join(cmdAnsible),
+                            '\nRetrun Code: ', str(resAnsible.returncode),
+                            '\nstdout: ', resAnsible.stdout,
+                            '\nstderr: ', resAnsible.stderr ])
+
+        # print( 'resAnsible.stderr:', resAnsible.stderr )
+        # print('exists in inresAnsible.stderr:', 'exists' in resAnsible.stderr)
+        if resAnsible.returncode == 0 or 'exists' in resAnsible.stderr:
+            return {'status':'ok','message':message}
+        else:
+            return {'status':'error', 'message':message}
+
+    def isAllOk( steps ):
+        return all([ step.get('status') == 'ok' for step in steps ])
+
+    ###---^^^--- Functions ---^^^---###
+
+    interface = VPS_dict[hostname].get('interface')
+
+    steps = [ setIpRule( srcIP, destIP ),
+              setIpRoute( destIP, interface ),
+              setVpsRoute( hostname, route ) ]
+
+    # collect all messages to one message
+    # is all statuses is 'ok'?
+    msgList = []
+    isStatusOkList = []
+    for step in steps:
+            msgList.append(step.get('message'))
+            isStatusOkList.append(step.get('status') == 'ok')
+    message = '\n'.join(msgList)
+    isAllOk = all(isStatusOkList)
+        
+    # if 'message' is empty
+    if isAllOk:
+        return jsonify({'status':'ok', 'message': message }), 200
     else:
-        write_inventory()
-        return jsonify({'status':'ok', 'message':'route completed'}), 200
+        return jsonify({'status':'error', 'message': message }), 500
 
 def check_vps( hostname='vps' ):
     # check for availability to work with ansible
@@ -238,6 +284,7 @@ def add_vps( hostname, parameters ):
     VPS_dict[hostname]['interface'] ='tun'+str(VPS_dict[hostname].get('host_id'))
     VPS_dict[hostname]['configured'] = 'no'
     VPS_dict[hostname]['routes'] = []
+
     write_inventory()
 
     check_vps(hostname)
@@ -343,6 +390,6 @@ def config_vps(hostname='vps'):
     if hostname == 'vps':
         confTread = Thread(target=conf_all_vps)
     else:
-        confTread = Thread(target=configure_vps, args=(hostname,))
+        confTread = Thread(target=conf_one_vps, args=(hostname,))
 
     confTread.start()
