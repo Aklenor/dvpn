@@ -22,7 +22,7 @@ import {EditVpsModal} from './edit-vps-modal.component'
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'chooseVPS','edit', 'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'chooseVPS','edit', 'delete'];
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
@@ -35,7 +35,8 @@ export class VpsManagementComponent {
         arr.push(data[el]);
       }
       this.vps = arr;
-      console.log(this.vps)
+    console.log(`edited`, this.vps);
+    console.log(`raw`, data);
       this.dataSource = new MatTableDataSource(this.vps);
       this.isLoadingResults = false;
     }
