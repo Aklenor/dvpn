@@ -1,1 +1,30 @@
-{{data}}
+<div class="example-container">
+
+    <p>
+        <mat-form-field style="width: 100%;" appearance="standard">
+            <mat-label>ansible_host</mat-label>
+            <input matInput [formControl]="ansibleHostFormControl" placeholder="10.0.0.1">
+            <mat-hint>IP address</mat-hint>
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field style="width: 100%;" appearance="standard">
+            <mat-label>ansible_user</mat-label>
+            <input matInput [formControl]="ansibleUserFormControl" placeholder="root">
+            <mat-hint>User name</mat-hint>
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field style="width: 100%;" appearance="standard">
+            <mat-label>hostname</mat-label>
+            <input matInput [formControl]="hostnameFormControl" placeholder="my_vps">
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field style="width: 100%;" appearance="standard">
+            <mat-label>ansible_port</mat-label>
+            <input matInput [formControl]="portFormControl" placeholder="25">
+        </mat-form-field>
+    </p>
+    <p> <button mat-raised-button color="primary" (click)="addVPS()">Primary</button></p>
+</div>

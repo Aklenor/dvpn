@@ -4,7 +4,7 @@ import { RequestsService } from '../requests.service';
 import { vpsList } from '../vpsList';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import {EditVpsModal} from './edit-vps-modal.component'
+import { EditVpsModal } from './edit-vps-modal.component'
 
 @Component({
   selector: 'app-vps-management',
@@ -22,31 +22,41 @@ import {EditVpsModal} from './edit-vps-modal.component'
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'chooseVPS','edit', 'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'edit', 'delete'];
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
   constructor(private http: RequestsService, private _bottomSheet: MatBottomSheet) { }
 
   ngOnInit() {
+    this.getListVPS();
+    // IP Address API request
+    this.http.getIpAddress().subscribe(data => { this.ipAddress = data });
+  }
+
+
+  // Rrequesting available VPS list
+
+  getListVPS() {
     let arr = [];
     this.http.getVpsList().subscribe((data: vpsList[]) => {
       for (let el in data) {
         arr.push(data[el]);
       }
       this.vps = arr;
-    console.log(`edited`, this.vps);
-    console.log(`raw`, data);
+      console.log(`edited`, this.vps);
+      console.log(`raw`, data);
       this.dataSource = new MatTableDataSource(this.vps);
       this.isLoadingResults = false;
-    }
-    )
-    this.http.getIpAddress().subscribe( data => { this.ipAddress=data });
+    })
   }
 
-  openBottomSheet(hostname): void {
-    this._bottomSheet.open(EditVpsModal,  {
-      data: hostname });
+
+  openBottomSheet(): void {
+    this._bottomSheet._openedBottomSheetRef = this._bottomSheet.open(EditVpsModal);
+
+    this._bottomSheet._openedBottomSheetRef.afterDismissed().subscribe(data => { this.getListVPS(); }
+    );
   }
 
 
@@ -61,11 +71,5 @@ export class VpsManagementComponent {
   // OPTIONAL:
   editVps(hostname) {
     console.log(hostname);
-  }
-
-  chooseVPS(hostname){
-    this.http.chooseVPS({data:hostname}).subscribe(data => {
-      console.log(`Choose vps ${data}`);
-    })
   }
 }

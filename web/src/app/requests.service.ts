@@ -24,8 +24,8 @@ export class RequestsService {
     return this.http.get(`http://ip-api.com/json`);
   }
 
-  chooseVPS(hostname): Observable<any>{
-    return this.http.post(`${this.url}\config_vps`,hostname);
+  addVPS(data:any): Observable<any>{
+    return this.http.post(`${this.url}\add_vps`,data);
   }
 
 }
