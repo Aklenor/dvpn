@@ -25,7 +25,7 @@ export class RequestsService {
   }
 
   chooseVPS(hostname): Observable<any>{
-    return this.http.post(`${this.url}\chooseVPS`,hostname);
+    return this.http.post(`${this.url}\config_vps`,hostname);
   }
 
 }
