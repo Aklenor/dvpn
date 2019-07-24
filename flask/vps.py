@@ -240,6 +240,8 @@ def add_vps( hostname, parameters ):
     VPS_dict[hostname] = parameters
     VPS_dict[hostname]['host_id'] = id
     VPS_dict[hostname]['interface'] ='tun'+str(VPS_dict[hostname].get('host_id'))
+    VPS_dict[hostname]['hostname'] = hostname
+    VPS_dict[hostname]['ip_info'] = getIpLocation(parameters['ansible_host'])
     VPS_dict[hostname]['configured'] = 'no'
     VPS_dict[hostname]['routes'] = []
 

@@ -5,6 +5,9 @@ import { vpsList } from '../vpsList';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { EditVpsModal } from './edit-vps-modal.component'
+import { interval, Observable } from 'rxjs';
+import { mergeMap, takeWhile, concatMap } from "rxjs/operators";
+import { Type } from '@angular/compiler';
 
 @Component({
   selector: 'app-vps-management',
@@ -26,18 +29,20 @@ export class VpsManagementComponent {
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
+  updDaemon: number;
+
   constructor(private http: RequestsService, private _bottomSheet: MatBottomSheet) { }
 
   ngOnInit() {
     this.getListVPS();
+
     // IP Address API request
     this.http.getIpAddress().subscribe(data => { this.ipAddress = data });
   }
 
-
   // Rrequesting available VPS list
-
   getListVPS() {
+    let isThereProgress = false;
     let arr = [];
     this.http.getVpsList().subscribe((data: vpsList[]) => {
       for (let el in data) {
@@ -48,13 +53,24 @@ export class VpsManagementComponent {
       console.log(`raw`, data);
       this.dataSource = new MatTableDataSource(this.vps);
       this.isLoadingResults = false;
+
+      for (let element in arr) {
+        if (arr[element].configured == 'in progress') {
+          isThereProgress = true;
+          if (!this.updDaemon) {
+            this.updDaemon = window.setInterval(() => this.getListVPS(), 10000);
+          }
+          break;
+        }
+      }
+      if (!isThereProgress) {
+        clearInterval(this.updDaemon)
+      }
     })
   }
 
-
   openBottomSheet(): void {
     this._bottomSheet._openedBottomSheetRef = this._bottomSheet.open(EditVpsModal);
-
     this._bottomSheet._openedBottomSheetRef.afterDismissed().subscribe(data => { this.getListVPS(); }
     );
   }

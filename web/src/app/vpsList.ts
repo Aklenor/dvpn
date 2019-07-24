@@ -6,4 +6,5 @@ export interface vpsList {
     country?: string;
     region?: string;
     routes: string;
+    configured: string;
   }
