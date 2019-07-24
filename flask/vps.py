@@ -27,43 +27,11 @@ def read_inventory():
         except yaml.YAMLError as exc:
             print('Error while read inventory file\n',
                     exc)
-            return 
-    VPS_dict = inventory['all']['children']['vps']['hosts']
-
-# set vars in inventory for vps group if they are not exists:
-#   'host_id' for all hosts
-#   'hostname' necessary to parce it in frontend
-#   'interface' based on 'host_id'
-#   'routes' as a list of dicts
-# def fix_inventory():
-#     global VPS_dict
-#     for hostname in VPS_dict: 
-#         # ID
-#         if VPS_dict[hostname].get('host_id') is None:
-#             VPS_dict[hostname]['host_id'] = getAvailableId()
-#         VPS_dict[hostname]['interface'] = 'tun'+str(VPS_dict[hostname].get('host_id'))
-#         # hostname
-#         if VPS_dict[hostname].get('hostname') is None:
-#             VPS_dict[hostname]['hostname'] = hostname
-
-#         # IP_info
-#         vps_ip_address = VPS_dict[hostname].get('ansible_host')
-#         VPS_dict[hostname]['ip_info'] = getIpLocation(vps_ip_address)
-
-#         # Routes
-#         if type(VPS_dict[hostname].get('routes')) is not list:
-#             VPS_dict[hostname]['routes'] = []
-#         uniq = []
-#         for route in VPS_dict[hostname].get('routes'):
-#             if (route not in uniq) and (route is not None):
-#                 uniq.append(route)
-#         VPS_dict[hostname]['routes'] = uniq
-
-#     check_vps()
-#     write_inventory()
+            return
+    VPS_dict = inventory['all']['children']['vps']['hosts']  
 
 def write_inventory():
-    global VPS_dict    
+    global VPS_dict
 
     inventory = {}
     inventory.setdefault('all', {'children':{'vps':{'hosts':{}}}})
@@ -107,25 +75,7 @@ def getIpLocation(ip):
                 "region": data.get('region'),
                 "city": data.get('city')}
 
-# form servers_list to send it to Front
-# def get_vps_list():
-#     # this variable in 'inventory file' will be used as VPS's IP address
-#     # global inventory
-#     addressParameter='ansible_host'
-#     servers_dict = {}
-#     for hostname in VPS_dict:
-#         item = {}
-#         item['hostname'] = hostname
-#         item['ip'] =  VPS_dict[ hostname ].get( addressParameter )
-#         item['ip_info'] = getIpLocation(VPS_dict[ hostname ].get( addressParameter ))
-#         item['interface'] = VPS_dict[ hostname ].get('interface')
-#         item['vpn_ip'] = '10.0.0.' + str(VPS_dict[ hostname ].get('host_id')*4+1)
-#         item['routes'] = VPS_dict[hostname].get('routes')
-#         item['state'] = VPS_dict[hostname].get('state')
-#         item['configured'] = VPS_dict[hostname].get('configured')
-#         servers_dict[ hostname ] = item
-#     return servers_dict
-
+# PROBLEM: keep system routes and routes in inventory synced
 def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
 
     print(destIP)
@@ -143,7 +93,7 @@ def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
         return jsonify({ 'status':'error', 'message': "'" + hostname + "' is bad hostname" }), 400
     # check if route exists
     if route in VPS_dict[hostname].get('routes'):
-        return jsonify({ 'status':'ok', 'message': "'"+ route + "' already exists" }), 200
+        return jsonify({ 'status':'ok', 'message': "'"+ str(route) + "' already exists" }), 200
 
     ###---vvv--- Functions ---vvv---###
 
@@ -186,7 +136,7 @@ def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
         # add ip route on IPCS
         cmdIpRouteAdd = ['sudo','ip','route','add',destIP,'dev', interface, 'table','1']
         resIpRouteAdd = subprocess.run(cmdIpRouteAdd, capture_output=True, text=True)
-        message = ''.join([ 'Error during run command: ', ' '.join(cmdIpRouteAdd),
+        message = ''.join([ 'During run command: ', ' '.join(cmdIpRouteAdd),
                             '\nRetrun Code: ', str(resIpRouteAdd.returncode),
                             '\nstdout: ', resIpRouteAdd.stdout,
                             '\nstderr: ', resIpRouteAdd.stderr ])
@@ -198,16 +148,18 @@ def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
 
     # IP ROUTE on VPS
     def setVpsRoute( hostname, route ):
+
         # get copy of VPS variables
-        host_params = VPS_dict[hostname]
+        host_params = VPS_dict.get(hostname).copy()
         host_params['routes'] = [ route ]
         AnsibleExtraVars = json.dumps(host_params)
-        cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),'--tags=add_route',
+        cmdAnsible = ['ansible-playbook','-i',fileInventory,
+                '--limit=' + str(hostname),'--tags=add_route',
                 '--extra-vars', AnsibleExtraVars, setupPlaybook]
         resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
 
         # add ip route on IPCS
-        message = ''.join([ 'Error during run command: ', ' '.join(cmdAnsible),
+        message = ''.join([ 'during run command: ', ' '.join(cmdAnsible),
                             '\nRetrun Code: ', str(resAnsible.returncode),
                             '\nstdout: ', resAnsible.stdout,
                             '\nstderr: ', resAnsible.stderr ])
@@ -226,9 +178,11 @@ def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
 
     interface = VPS_dict[hostname].get('interface')
 
-    steps = [ setIpRule( srcIP, destIP ),
-              setIpRoute( destIP, interface ),
-              setVpsRoute( hostname, route ) ]
+    steps = [ 
+            setIpRule( srcIP, destIP ),
+            setIpRoute( destIP, interface ),
+            setVpsRoute( hostname, route )
+              ]
 
     # collect all messages to one message
     # is all statuses is 'ok'?
@@ -239,9 +193,13 @@ def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
             isStatusOkList.append(step.get('status') == 'ok')
     message = '\n'.join(msgList)
     isAllOk = all(isStatusOkList)
+    print(isStatusOkList)
         
     # if 'message' is empty
     if isAllOk:
+        print("new route added")
+        VPS_dict[hostname]['routes'].append(route)
+        write_inventory()
         return jsonify({'status':'ok', 'message': message }), 200
     else:
         return jsonify({'status':'error', 'message': message }), 500
@@ -300,6 +258,7 @@ def del_vps( hostname ):
     check_vps(hostname)
     if VPS_dict[hostname]['state'] != 'available':
         VPS_dict.pop(hostname)
+        write_inventory()
         return jsonify({'status':'ok', 'message':'VPS is removed'}), 200
 
     cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),
@@ -315,6 +274,7 @@ def del_vps( hostname ):
             'message': 'ansible-playbook return code: ' + str(resAnsible.returncode) }), 500
     else:
         VPS_dict.pop(hostname)
+        write_inventory()
         return jsonify({'status':'ok', 'message':'VPS is removed'}), 200
 
 def edit_vps( hostname, parameters ):
@@ -330,9 +290,6 @@ def edit_vps( hostname, parameters ):
     check_vps(hostname)
 
     return jsonify({"status":"ok","message":"new host added"}), 200
-
-# PROBLEM: keep system routes and routes in inventory synced
-
 
 def config_vps(hostname='vps'):
     global VPS_dict
@@ -381,7 +338,7 @@ def config_vps(hostname='vps'):
                   '\nRetrun Code: ',    resAnsible.returncode,
                   '\nstdout: ',         resAnsible.stdout,
                   '\nstderr: ',         resAnsible.stderr)
-            return { 'status':'error', 
+            return { 'status':'error',
                 'message': 'ansible-playbook return code: ' +
                 str(resAnsible.returncode) }
         else:

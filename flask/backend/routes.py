@@ -6,6 +6,7 @@ from flask import jsonify
 import os
 import sys
 import vps
+import pdb
 
 ansible_playbook = 'roles/setup.yml'
 vps.read_inventory()
@@ -60,8 +61,6 @@ def add_route():
 
 @app.route('/config_vps', methods=["POST"])
 def config_vps():
-    content = request.get_json()
-    hostname = content.get('data')
-    # hostname = request.form.get('data')
-    # vps.config_vps(hostname)
+    hostname = request.form.get('hostname')
+    vps.config_vps(hostname)
     return jsonify({"status":"test","message":"configuring vps"})
