@@ -36,20 +36,44 @@ def del_vps():
     hostname = request.form.get('hostname')
     return vps.del_vps( hostname )
 
-@app.route('/edit_vps', methods=["POST"])
-def edit_vps():
-    content = request.get_json()
-    hostname = content.get('hostname')
-    parameters = content.get('parameters')
-    return vps.edit_vps( hostname , parameters )
+# @app.route('/edit_vps', methods=["POST"])
+# def edit_vps():
+#     content = request.get_json()
+#     hostname = content.get('hostname')
+#     parameters = content.get('parameters')
+#     return vps.edit_vps( hostname , parameters )
 
 @app.route('/add_route', methods=["POST"])
 def add_route():
-    src = request.remote_addr
-    # dst = request.form.get('destination')
-    hostname = request.form.get('hostname')
-    descr = request.form.get('description')
-    return vps.add_route(src, hostname )
+    if not request.is_json:
+        return jsonify({"status":"error","message":"request in not json"}), 400
+    content = request.get_json()
+
+    src = content.get('source')
+    if src is None:
+        src = request.remote_addr
+
+    dst = content.get('destination')
+    hostname = content.get('hostname')
+    descr = content.get('description')
+
+    return vps.route('add', src, hostname, dst, descr )
+
+@app.route('/del_route', methods=["POST"])
+def del_route():
+    if not request.is_json:
+        return jsonify({"status":"error","message":"request in not json"}), 400
+    content = request.get_json()
+
+    src = content.get('source')
+    if src is None:
+        src = request.remote_addr
+
+    dst = content.get('destination')
+    hostname = content.get('hostname')
+    descr = content.get('description')
+
+    return vps.route('delete', src, hostname, dst, descr )
 
 # @app.route('/del_route', methods=["POST"])
 # def del_route():
@@ -59,8 +83,8 @@ def add_route():
 #     descr = request.form.get('description')
 #     return vps.del_route(src, dst, hostname, descr)
 
-@app.route('/config_vps', methods=["POST"])
-def config_vps():
-    hostname = request.form.get('hostname')
-    vps.config_vps(hostname)
-    return jsonify({"status":"test","message":"configuring vps"})
+# @app.route('/config_vps', methods=["POST"])
+# def config_vps():
+#     hostname = request.form.get('hostname')
+#     vps.config_vps(hostname)
+#     return jsonify({"status":"test","message":"configuring vps"})

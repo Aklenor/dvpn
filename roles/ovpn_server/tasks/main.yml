@@ -9,11 +9,17 @@
 - import_tasks: nat.yml
 - import_tasks: client-setup.yml
 
-- include_tasks: add_route.yml
+- include_tasks: route.yml
   loop: "{{ routes }}"
   loop_control:
     loop_var: route
   tags: add_route
+
+- include_tasks: route.yml
+  loop: "{{ routes }}"
+  loop_control:
+    loop_var: route
+  tags: del_route
 
 
 # - include_tasks: install.yml
