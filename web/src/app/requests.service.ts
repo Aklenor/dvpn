@@ -11,7 +11,7 @@ export class RequestsService {
 
   constructor( private http: HttpClient) { }
 
-  private url = 'http://127.0.0.1:5000/';  // URL to web api
+  private url = 'http://10.1.1.240:5000/';  // URL to web api
 
   getVpsList (): Observable<vpsList[]> {
     return this.http.get<vpsList[]>(`${this.url}\availablevps`);
@@ -26,6 +26,10 @@ export class RequestsService {
 
   addVPS(data:any): Observable<any>{
     return this.http.post(`${this.url}\add_vps`,data);
+  }
+
+  addRoute(data:any): Observable<any>{
+    return this.http.post(`${this.url}\add_route`,data);
   }
 
 }

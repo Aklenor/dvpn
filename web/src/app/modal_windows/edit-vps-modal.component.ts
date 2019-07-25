@@ -1,8 +1,7 @@
-import { Inject, Component } from '@angular/core';
-import { MAT_BOTTOM_SHEET_DATA } from '@angular/material';
-import { MatBottomSheet, MatBottomSheetRef } from '@angular/material';
-import { VpsManagementComponent } from './vps-management.component'
-import { FormControl, FormGroupDirective, NgForm, Validators } from '@angular/forms';
+import {  Component } from '@angular/core';
+import { MatBottomSheetRef } from '@angular/material';
+import { VpsManagementComponent } from '../vps-management/vps-management.component'
+import { FormControl, Validators } from '@angular/forms';
 import { RequestsService } from '../requests.service';
 
 @Component({
@@ -12,8 +11,11 @@ import { RequestsService } from '../requests.service';
 
 export class EditVpsModal {
 
+  ipPattern = 
+    "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
+
   ansibleHostFormControl = new FormControl('', [
-    Validators.required,
+    Validators.pattern(this.ipPattern),
   ]);
   ansibleUserFormControl = new FormControl('', [
     Validators.required,
@@ -39,9 +41,16 @@ export class EditVpsModal {
           ansible_user: this.ansibleUserFormControl.value,
           ansible_port: this.portFormControl.value,
         }
-      }).subscribe(data => {
-        console.log(data)
-      });
+      }).subscribe((data) => {
+        console.log(data.message);
+        alert(data.message);
+      },
+      err=> {
+      console.log(err.error.message),
+      alert(err.error.message);
+      }
+      ),
+      
     this._bottomSheetRef.dismiss();
   }
 }

@@ -76,146 +76,18 @@ def getIpLocation(ip):
                 "region": data.get('region'),
                 "city": data.get('city')}
 
-# PROBLEM: keep system routes and routes in inventory synced
-#def add_route( srcIP,  hostname, destIP ='0.0.0.0/0', description='' ):
-
-#    print(destIP)
-#    global VPS_dict
-#    route = {'route': description, 'source': srcIP, 'destination': destIP }
-
-#    # print(srcIP, destIP, hostname)
-#    try: ipaddress.ip_network(srcIP)
-#    except ValueError:
-#        return jsonify({ 'status':'error', 'message': "'"+ srcIP + "' is bad source IP" }), 400
-#    try: ipaddress.ip_network(destIP)
-#    except ValueError:
-#        return jsonify({ 'status':'error', 'message': "'"+ destIP + "' is bad destination IP or subnet" }), 400
-#    if hostname not in VPS_dict:
-#        return jsonify({ 'status':'error', 'message': "'" + hostname + "' is bad hostname" }), 400
-#    # check if route exists
-#    if route in VPS_dict[hostname].get('routes'):
-#        return jsonify({ 'status':'ok', 'message': "'"+ str(route) + "' already exists" }), 200
-
-#    ###---vvv--- Functions ---vvv---###
-
-#    # IP RULE on IPCS
-#    def setIpRule( srcIP, destIP ):
-#        # check if rule already exists
-#        ipRuleList = subprocess.run(['ip','rule','list','table','1'], 
-#                                    capture_output=True, text=True).stdout
-
-#        # not quiet shure, maybe better to use regexp:
-#        if 'from '+ srcIP +' to '+ destIP in ipRuleList:
-#            return {'status':'ok','message':"rule already exists"}
-
-#        # add ip rule on IPCS
-#        cmdIpRuleAdd = ['sudo','ip','rule','add','from',srcIP,'to',destIP, 'table','1']
-#        resIpRuleAdd = subprocess.run(cmdIpRuleAdd, capture_output=True, text=True)
-
-#        message = ' '.join(['during command: ', ' '.join(cmdIpRuleAdd),
-#                            '\nRetrun Code: ', str(resIpRuleAdd.returncode),
-#                            '\nstdout: ', resIpRuleAdd.stdout,
-#                            '\nstderr: ', resIpRuleAdd.stderr ])
-
-#        if resIpRuleAdd.returncode != 0:
-#            return {'status':'error', 'message':message}
-#        else:
-#            return {'status':'ok','message':message}
-    
-#    # IP ROUTE on IPCS
-#    def setIpRoute( destIP, interface ):
-#        # check if route already exists
-#        ipRouteList = subprocess.run(['ip','route','list','table','1'], 
-#                                    capture_output=True, text=True).stdout
-
-#        # interface = VPS_dict[hostname]['interface']
-
-#        # not quiet shure, maybe better to use regexp
-#        if destIP +' dev '+ interface in ipRouteList:
-#            return {'status':'ok','message':"route already exists"}
-
-#        # add ip route on IPCS
-#        cmdIpRouteAdd = ['sudo','ip','route','add',destIP,'dev', interface, 'table','1']
-#        resIpRouteAdd = subprocess.run(cmdIpRouteAdd, capture_output=True, text=True)
-#        message = ''.join([ 'During run command: ', ' '.join(cmdIpRouteAdd),
-#                            '\nRetrun Code: ', str(resIpRouteAdd.returncode),
-#                            '\nstdout: ', resIpRouteAdd.stdout,
-#                            '\nstderr: ', resIpRouteAdd.stderr ])
-
-#        if resIpRouteAdd.returncode == 0 or 'exists' in resIpRouteAdd.stderr:
-#            return {'status':'ok','message':message}
-#        else:
-#            return {'status':'error', 'message':message}
-
-#    # IP ROUTE on VPS
-#    def setVpsRoute( hostname, route ):
-
-#        # get copy of VPS variables
-#        host_params = VPS_dict.get(hostname).copy()
-#        host_params['routes'] = [ route ]
-#        AnsibleExtraVars = json.dumps(host_params)
-#        cmdAnsible = ['ansible-playbook','-i',fileInventory,
-#                '--limit=' + str(hostname),'--tags=add_route',
-#                '--extra-vars', AnsibleExtraVars, setupPlaybook]
-#        resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
-
-#        # add ip route on IPCS
-#        message = ''.join([ 'during run command: ', ' '.join(cmdAnsible),
-#                            '\nRetrun Code: ', str(resAnsible.returncode),
-#                            '\nstdout: ', resAnsible.stdout,
-#                            '\nstderr: ', resAnsible.stderr ])
-
-#        # print( 'resAnsible.stderr:', resAnsible.stderr )
-#        # print('exists in inresAnsible.stderr:', 'exists' in resAnsible.stderr)
-#        if resAnsible.returncode == 0 or 'exists' in resAnsible.stderr:
-#            return {'status':'ok','message':message}
-#        else:
-#            return {'status':'error', 'message':message}
-
-#    def isAllOk( steps ):
-#        return all([ step.get('status') == 'ok' for step in steps ])
-
-#    ###---^^^--- Functions ---^^^---###
-
-#    interface = VPS_dict[hostname].get('interface')
-
-#    steps = [ 
-#            setIpRule( srcIP, destIP ),
-#            setIpRoute( destIP, interface ),
-#            setVpsRoute( hostname, route )
-#              ]
-
-#    # collect all messages to one message
-#    # is all statuses is 'ok'?
-#    msgList = []
-#    isStatusOkList = []
-#    for step in steps:
-#            msgList.append(step.get('message'))
-#            isStatusOkList.append(step.get('status') == 'ok')
-#    message = '\n'.join(msgList)
-#    isAllOk = all(isStatusOkList)
-#    print(isStatusOkList)
-        
-#    # if 'message' is empty
-#    if isAllOk:
-#        print("new route added")
-#        VPS_dict[hostname]['routes'].append(route)
-#        write_inventory()
-#        return jsonify({'status':'ok', 'message': message }), 200
-#    else:
-#        return jsonify({'status':'error', 'message': message }), 500
 
 def route( action, srcIP, hostname, destIP ='0.0.0.0/0', description='' ):
 
     global VPS_dict 
 
-    if type(srcIP) is not str:
+    if type(srcIP) is not str or srcIP == '':
         return jsonify({ 'status':'error',
             'message': "requested source IP address is not string" }), 500
     if type(hostname) is not str:
         return jsonify({ 'status':'error',
             'message': "requested 'hostname' is not string" }), 500
-    if type(destIP) is not str:
+    if type(destIP) is not str or destIP == '':
         destIP = '0.0.0.0/0'
 
     try: ipaddress.ip_network(srcIP)

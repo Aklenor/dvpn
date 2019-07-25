@@ -46,6 +46,7 @@ a,
     color: #1976f1;
     text-decoration: none;
     cursor: pointer;
+    outline: none;
 }
 
 .mat-icon-button {

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { RequestsService } from '../requests.service';
 import { vpsList } from '../vpsList';
+import { MatDialog } from '@angular/material/dialog';
+import { AddRouteDialogComponent } from '../modal_windows/add-route-dialog.component';
 
 @Component({
   selector: 'app-ip-routes',
@@ -12,7 +14,7 @@ export class IpRoutesComponent implements OnInit {
   dataRoutes;
   isLoadingResults = true;
 
-  constructor(private http: RequestsService) { }
+  constructor(private http: RequestsService, public dialog: MatDialog) { }
 
   ngOnInit() {
     let arr = [];
@@ -25,6 +27,16 @@ export class IpRoutesComponent implements OnInit {
       this.isLoadingResults = false;
     }
     )
+  }
+
+  openDialog(hostname) {
+    const dialogRef = this.dialog.open(AddRouteDialogComponent, {
+      data : hostname
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`);
+    });
   }
 
 }

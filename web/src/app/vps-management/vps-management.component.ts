@@ -1,13 +1,10 @@
-import { Inject, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { RequestsService } from '../requests.service';
 import { vpsList } from '../vpsList';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { EditVpsModal } from './edit-vps-modal.component'
-import { interval, Observable } from 'rxjs';
-import { mergeMap, takeWhile, concatMap } from "rxjs/operators";
-import { Type } from '@angular/compiler';
+import { EditVpsModal } from '../modal_windows/edit-vps-modal.component'
 
 @Component({
   selector: 'app-vps-management',
@@ -25,7 +22,7 @@ import { Type } from '@angular/compiler';
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'edit', 'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'delete'];
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
@@ -40,7 +37,7 @@ export class VpsManagementComponent {
     this.http.getIpAddress().subscribe(data => { this.ipAddress = data });
   }
 
-  // Rrequesting available VPS list
+  // Rrequesting available VPS list. If config 'in progress' repeat request after 10 sec.
   getListVPS() {
     let isThereProgress = false;
     let arr = [];
@@ -49,8 +46,7 @@ export class VpsManagementComponent {
         arr.push(data[el]);
       }
       this.vps = arr;
-      console.log(`edited`, this.vps);
-      console.log(`raw`, data);
+      console.log(`VPSLIST`, this.vps);
       this.dataSource = new MatTableDataSource(this.vps);
       this.isLoadingResults = false;
 
@@ -81,11 +77,6 @@ export class VpsManagementComponent {
   }
 
   deleteVps(hostname) {
-    console.log(hostname);
-  }
-
-  // OPTIONAL:
-  editVps(hostname) {
     console.log(hostname);
   }
 }

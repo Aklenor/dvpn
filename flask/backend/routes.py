@@ -50,7 +50,7 @@ def add_route():
     content = request.get_json()
 
     src = content.get('source')
-    if src is None:
+    if src is None or src == '':
         src = request.remote_addr
 
     dst = content.get('destination')

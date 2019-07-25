@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>Add route</h2>
+<mat-dialog-content class="mat-typography">
+    <h3>You can optionally specify destination and source IP address</h3>
+    <p>
+        <mat-form-field style="width: 100%;" appearance="standard">
+            <mat-label>Destination</mat-label>
+            <input matInput [formControl]="destinationFormControl" placeholder="0.0.0.0 default">
+            <mat-hint>Destination IP address</mat-hint>
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field style="width: 100%;" appearance="standard">
+            <mat-label>Source</mat-label>
+            <input matInput [formControl]="sourceFormControl" placeholder="127.0.0.1">
+            <mat-hint>Source IP address</mat-hint>
+        </mat-form-field>
+    </p>
+    <p>
+        <mat-form-field style="width: 100%;" appearance="standard">
+            <mat-label>Description</mat-label>
+            <input matInput [formControl]="descriptionFormControl" placeholder='Description'>
+            <mat-hint>Description</mat-hint>
+        </mat-form-field>
+    </p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-button mat-dialog-close (click)="addRoute()" cdkFocusInitial>Add</button>
+</mat-dialog-actions>

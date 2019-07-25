@@ -13,6 +13,7 @@
             </mat-panel-title>
             <mat-panel-description>
                 {{vps.state}}
+                <button mat-stroked-button color='primary' (click)='openDialog(vps.hostname)'><mat-icon>add</mat-icon> Add VPS</button>
             </mat-panel-description>
         </mat-expansion-panel-header>
         <div class="example-element-diagram" *ngFor="let el of vps.routes; index as i">
@@ -22,14 +23,15 @@
                     <span><p><b>Destination:</b></p> {{el.destination }} </span>
                     <span><p><b>Source:</b></p> {{el.source }} </span>
                     <span><p><b>Route:</b></p> {{el.route }} </span>
-                    <span class="inner_table_icons_btn"> 
+                    <!-- <span class="inner_table_icons_btn"> 
                             <button class="edit_inner_table_btn" mat-flat-button color="primary"> Edit route
                                 <mat-icon>edit</mat-icon>
                                 </button>
-                           </span>
-                    <span class="inner_table_icons_btn"> <button  class="delete_inner_table_btn" mat-flat-button color="primary"> Delete route
-                            <mat-icon>delete</mat-icon>
-                            </button></span>
+                           </span> -->
+                    <span class="inner_table_icons_btn">
+                        <button class="delete_inner_table_btn" mat-stroked-button (click)="deleteVps(element.hostname)"><mat-icon>delete</mat-icon></button>
+                        </span>
+
                 </div>
             </mat-card>
         </div>

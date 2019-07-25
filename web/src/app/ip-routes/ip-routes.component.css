@@ -3,6 +3,16 @@
     /* margin: 8px 0; */
 }
 
+.mat-expansion-panel-header-title,
+.mat-expansion-panel-header-description {
+    flex-basis: 0;
+}
+
+.mat-expansion-panel-header-description {
+    justify-content: space-between;
+    align-items: center;
+}
+
 .inner_table {
     display: flex;
     justify-content: space-between;
@@ -13,13 +23,8 @@
     align-self: center;
 }
 
-.add_vps_btn {
-    background: #2ecc71;
-    margin: 20px 0;
-}
-
 .delete_inner_table_btn {
-    background-color: #E2574C;
+    color: #E2574C;
 }
 
 .edit_inner_table_btn {

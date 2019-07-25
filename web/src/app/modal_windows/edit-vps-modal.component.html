@@ -1,9 +1,8 @@
 <div class="example-container">
-
     <p>
         <mat-form-field style="width: 100%;" appearance="standard">
             <mat-label>ansible_host</mat-label>
-            <input matInput [formControl]="ansibleHostFormControl" placeholder="10.0.0.1">
+            <input matInput [formControl]="ansibleHostFormControl" ng-pattern='/^([0-9]{1,3})[.]([0-9]{1,3})[.]([0-9]{1,3})[.]([0-9]{1,3})$/' placeholder="10.0.0.1">
             <mat-hint>IP address</mat-hint>
         </mat-form-field>
     </p>
@@ -23,8 +22,8 @@
     <p>
         <mat-form-field style="width: 100%;" appearance="standard">
             <mat-label>ansible_port</mat-label>
-            <input matInput [formControl]="portFormControl" placeholder="25">
+            <input type="number" min='0' matInput [formControl]="portFormControl" placeholder="25">
         </mat-form-field>
     </p>
-    <p> <button mat-raised-button color="primary" (click)="addVPS()">Submit</button></p>
+    <p> <button [disabled]="!ansibleHostFormControl.value || !hostnameFormControl.value" mat-raised-button color="primary" (click)="addVPS()">Submit</button></p>
 </div>
