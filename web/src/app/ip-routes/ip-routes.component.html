@@ -1,9 +1,17 @@
 <div class="text">
     <span class="main-head">IP Routes section</span>
-    <span class="second-head">Rent/add/edit/delete your servers</span>
+    <span class="second-head">Rent/add/edit/delete your routes</span>
 </div>
 
+<mat-divider></mat-divider>
+
 <mat-progress-bar *ngIf="isLoadingResults" mode="indeterminate"></mat-progress-bar>
+
+<div class="text" *ngIf='dataRoutes.length == 0'>
+    <span class="main-head">Nothing to show</span>
+    <span class="second-head">Routing table is empty</span>
+</div>
+
 
 <mat-accordion>
     <mat-expansion-panel *ngFor="let vps of dataRoutes">
@@ -13,7 +21,7 @@
             </mat-panel-title>
             <mat-panel-description>
                 {{vps.state}}
-                <button mat-stroked-button color='primary' (click)='openDialog(vps.hostname)'><mat-icon>add</mat-icon> Add VPS</button>
+                <button mat-stroked-button color='primary' (click)='openDialog(vps.hostname)'><mat-icon>add</mat-icon> Add route</button>
             </mat-panel-description>
         </mat-expansion-panel-header>
         <div class="example-element-diagram" *ngFor="let el of vps.routes; index as i">
@@ -29,9 +37,8 @@
                                 </button>
                            </span> -->
                     <span class="inner_table_icons_btn">
-                        <button class="delete_inner_table_btn" mat-stroked-button (click)="deleteVps(element.hostname)"><mat-icon>delete</mat-icon></button>
+                        <button class="delete_inner_table_btn" mat-stroked-button (click)="deleteRoute(el,vps.hostname)"><mat-icon>delete</mat-icon></button>
                         </span>
-
                 </div>
             </mat-card>
         </div>

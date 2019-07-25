@@ -1,5 +1,10 @@
 <h2 mat-dialog-title>Add route</h2>
-<mat-dialog-content class="mat-typography">
+<div *ngIf="isLoading" style="width: 100%;">
+    <h3 mat-dialog-title>Connection establishing...</h3>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div>
+
+<mat-dialog-content *ngIf="!isLoading" class="mat-typography">
     <h3>You can optionally specify destination and source IP address</h3>
     <p>
         <mat-form-field style="width: 100%;" appearance="standard">
@@ -23,7 +28,7 @@
         </mat-form-field>
     </p>
 </mat-dialog-content>
-<mat-dialog-actions align="end">
+<mat-dialog-actions *ngIf="!isLoading" align="end">
     <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-button mat-dialog-close (click)="addRoute()" cdkFocusInitial>Add</button>
+    <button mat-button (click)="addRoute()" cdkFocusInitial>Add</button>
 </mat-dialog-actions>

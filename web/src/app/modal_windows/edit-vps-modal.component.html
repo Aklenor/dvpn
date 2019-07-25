@@ -1,4 +1,10 @@
-<div class="example-container">
+<h2 mat-dialog-title>Add new VPS</h2>
+
+<div *ngIf="isLoading" style="width: 100%;">
+    <h3 mat-dialog-title>Adding in progress...</h3>
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+</div>
+<div class="example-container" *ngIf="!isLoading">
     <p>
         <mat-form-field style="width: 100%;" appearance="standard">
             <mat-label>ansible_host</mat-label>

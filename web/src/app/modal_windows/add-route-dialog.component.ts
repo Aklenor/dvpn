@@ -11,39 +11,41 @@ import { IpRoutesComponent } from '../ip-routes/ip-routes.component';
 
 export class AddRouteDialogComponent {
 
+    isLoading: boolean = false;
     ipPattern =
         "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
 
     destinationFormControl = new FormControl('', [
         Validators.required,
-
     ]);
     sourceFormControl = new FormControl('', [
         Validators.required,
-
     ]);
 
     descriptionFormControl = new FormControl('', [
         Validators.required,
-
     ]);
+
     constructor(public dialogRef: MatDialogRef<IpRoutesComponent>,
         @Inject(MAT_DIALOG_DATA) public data, private http: RequestsService) { }
 
     addRoute() {
+        this.isLoading = true;
         this.http.addRoute(
             {
-                hostname: this.data,
+                hostname: this.data.hostname,
                 destination: this.destinationFormControl.value,
                 source: this.sourceFormControl.value,
-                descrition: this.descriptionFormControl.value
+                description: this.descriptionFormControl.value
             }).subscribe((data) => {
-                console.log(data.message);
                 alert(data.message);
+                this.isLoading = false;
+                this.dialogRef.close();
             },
                 err => {
-                    console.log(err.error.message),
-                        alert(err.error.message);
+                    this.isLoading = false;
+                    alert(err.error.message);
+                    this.dialogRef.close();
                 }
             )
     }
