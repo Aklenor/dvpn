@@ -4,7 +4,10 @@ import { RequestsService } from '../requests.service';
 import { vpsList } from '../vpsList';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { EditVpsModal } from '../modal_windows/edit-vps-modal.component'
+import { EditVpsModal } from '../modal_windows/edit-vps-modal.component';
+import { MatDialog } from '@angular/material/dialog';
+import { AddRouteDialogComponent } from '../modal_windows/add-route-dialog.component';
+
 
 @Component({
   selector: 'app-vps-management',
@@ -22,13 +25,13 @@ import { EditVpsModal } from '../modal_windows/edit-vps-modal.component'
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'progress', 'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'progress', 'add' ,'delete'];
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
   updDaemon: number;
 
-  constructor(private http: RequestsService, private _bottomSheet: MatBottomSheet) { }
+  constructor(private http: RequestsService, private _bottomSheet: MatBottomSheet, public dialog: MatDialog) { }
 
   ngOnInit() {
     this.getListVPS();
@@ -69,6 +72,22 @@ export class VpsManagementComponent {
     );
   }
 
+  openDialog(hostname) {
+    const dialogRef = this.dialog.open(AddRouteDialogComponent, {
+      data: {
+        hostname: hostname
+      }
+    });
+
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.getListVPS();
+      this.http.getIpAddress().subscribe(data => { this.ipAddress = data });
+    },
+    );
+
+  }
+  
 
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
@@ -77,7 +96,6 @@ export class VpsManagementComponent {
   deleteVps(hostname) {
     this.isLoadingResults = true;
     this.http.deleteVPS({ hostname: hostname }).subscribe(data => {
-      console.log(data);
       alert(data.message);
       this.getListVPS();
       this.isLoadingResults = false;

@@ -17,15 +17,24 @@ export class IpRoutesComponent implements OnInit {
   constructor(private http: RequestsService, public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.getListVPS();
+    this.getRoutes();
   }
 
-  getListVPS() {
+  getRoutes() {
     this.isLoadingResults = true;
     let arr = [];
-    this.http.getVpsList().subscribe((data: vpsList[]) => {
-      for (let el in data) {
-        arr.push(data[el]);
+    this.http.getRoutes().subscribe((data: any) => {
+      for (let el in data.clients) {
+        let routes = [];
+
+        for (let r in data.clients[el].routes) {
+          routes.push(
+            {
+              hostname: data.clients[el].routes[r].VPS.hostname,
+              destination: data.clients[el].routes[r].destination,
+            });
+        }
+        arr.push({ source: data.clients[el].source, routes: routes });
       }
       this.dataRoutes = arr;
       this.isLoadingResults = false;
@@ -33,35 +42,33 @@ export class IpRoutesComponent implements OnInit {
     )
   }
 
-  openDialog(hostname) {
-    const dialogRef = this.dialog.open(AddRouteDialogComponent, {
-      data: {
-        hostname: hostname
-      }
-    });
+  // openDialog(hostname) {
+  //   const dialogRef = this.dialog.open(AddRouteDialogComponent, {
+  //     data: {
+  //       hostname: hostname
+  //     }
+  //   });
 
-    dialogRef.afterClosed().subscribe(result => {
-      this.getListVPS();
-    },
-    );
-  }
+  //   dialogRef.afterClosed().subscribe(result => {
+  //   },
+  //   );
+  // }
 
 
-  deleteRoute(element, hostname) {
+  deleteRoute(source, destination, hostname) {
     this.isLoadingResults = true;
     this.http.deleteRoute({
       hostname: hostname,
-      description: element.description,
-      destination: element.destination,
-      source: element.source
+      destination: destination,
+      source: source
     }).subscribe(data => {
       alert(data.message);
-      this.getListVPS();
+      this.getRoutes();
       this.isLoadingResults = false;
     },
       err => {
         alert(err.error.message);
-        this.getListVPS();
+        this.getRoutes();
         this.isLoadingResults = false;
       }
     )
