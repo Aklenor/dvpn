@@ -1,4 +1,4 @@
-- name: set VPS sshd_config for Archlinux
+- name: set VPS sshd_config
   remote_user: root
   vars:
     sftp_path:

@@ -16,3 +16,16 @@
     state: present
   tags:
     nat
+
+- name: set private addresses go to tun0 
+  command: ip route add 10.0.0.0/8 dev tun0
+  tags:
+    nat
+- name: set private addresses go to tun0 
+  command: ip route add 172.16.0.0/12 dev tun0
+  tags:
+    nat
+- name: set private addresses go to tun0 
+  command: ip route add 192.168.0.0/16 dev tun0
+  tags:
+    nat

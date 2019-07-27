@@ -20,6 +20,11 @@ To avoid banning of external gateway IP address VPS servers should be used. The 
 
 ![](structure.png)
 
+## Requirements
+
+sudoers: user nopassword all - ansible playbook requires sudo
+generate ssh keys and add public key to routes.py
+
 ### Solution architecture
 
 #### Ansible Playbooks
