@@ -1,4 +1,4 @@
-import {  Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatBottomSheetRef } from '@angular/material';
 import { VpsManagementComponent } from '../vps-management/vps-management.component'
 import { FormControl, Validators } from '@angular/forms';
@@ -11,8 +11,10 @@ import { RequestsService } from '../requests.service';
 
 export class EditVpsModal {
 
-  ipPattern = 
+  ipPattern =
     "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
+
+  isLoading: boolean = false;
 
   ansibleHostFormControl = new FormControl('', [
     Validators.pattern(this.ipPattern),
@@ -33,6 +35,7 @@ export class EditVpsModal {
   constructor(private _bottomSheetRef: MatBottomSheetRef<VpsManagementComponent>, private http: RequestsService) { }
 
   addVPS() {
+    this.isLoading = true;
     this.http.addVPS(
       {
         hostname: this.hostnameFormControl.value,
@@ -42,15 +45,15 @@ export class EditVpsModal {
           ansible_port: this.portFormControl.value,
         }
       }).subscribe((data) => {
-        console.log(data.message);
+        this.isLoading = false;
         alert(data.message);
+        this._bottomSheetRef.dismiss();
       },
-      err=> {
-      console.log(err.error.message),
-      alert(err.error.message);
-      }
-      ),
-      
-    this._bottomSheetRef.dismiss();
+        err => {
+          this.isLoading = false;
+          alert(err.error.message);
+          this._bottomSheetRef.dismiss();
+        }
+      )
   }
 }

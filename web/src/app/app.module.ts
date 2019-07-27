@@ -14,7 +14,7 @@ import { VpsManagementComponent } from './vps-management/vps-management.componen
 import { ParticlesComponent } from './particles/particles.component';
 import { EditVpsModal } from './modal_windows/edit-vps-modal.component';
 import { RequestsService } from './requests.service';
-
+import { sshKeyOverview } from './vps-management/vps-management.component';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatMenuModule } from '@angular/material/menu';
@@ -29,8 +29,11 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import {MatDialogModule} from '@angular/material/dialog'; 
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 @NgModule({
   declarations: [
     AppComponent,
@@ -39,7 +42,8 @@ import {MatDialogModule} from '@angular/material/dialog';
     VpsManagementComponent,
     ParticlesComponent,
     EditVpsModal,
-    AddRouteDialogComponent
+    AddRouteDialogComponent,
+    sshKeyOverview
   ],
   imports: [
     BrowserModule,
@@ -60,13 +64,16 @@ import {MatDialogModule} from '@angular/material/dialog';
     MatExpansionModule,
     MatBottomSheetModule,
     MatButtonModule,
+    MatSnackBarModule,
     AppRoutingModule,
+    MatProgressSpinnerModule,
     MatDialogModule
   ],
   providers: [RequestsService],
   entryComponents: [
     EditVpsModal,
-    AddRouteDialogComponent
+    AddRouteDialogComponent,
+    sshKeyOverview
   ],
   bootstrap: [AppComponent]
 })

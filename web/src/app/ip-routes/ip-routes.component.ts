@@ -11,19 +11,23 @@ import { AddRouteDialogComponent } from '../modal_windows/add-route-dialog.compo
 })
 export class IpRoutesComponent implements OnInit {
 
-  dataRoutes;
+  dataRoutes = [];
   isLoadingResults = true;
 
   constructor(private http: RequestsService, public dialog: MatDialog) { }
 
   ngOnInit() {
+    this.getListVPS();
+  }
+
+  getListVPS() {
+    this.isLoadingResults = true;
     let arr = [];
     this.http.getVpsList().subscribe((data: vpsList[]) => {
       for (let el in data) {
         arr.push(data[el]);
       }
       this.dataRoutes = arr;
-      console.log(this.dataRoutes);
       this.isLoadingResults = false;
     }
     )
@@ -31,12 +35,36 @@ export class IpRoutesComponent implements OnInit {
 
   openDialog(hostname) {
     const dialogRef = this.dialog.open(AddRouteDialogComponent, {
-      data : hostname
+      data: {
+        hostname: hostname
+      }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log(`Dialog result: ${result}`);
-    });
+      this.getListVPS();
+    },
+    );
+  }
+
+
+  deleteRoute(element, hostname) {
+    this.isLoadingResults = true;
+    this.http.deleteRoute({
+      hostname: hostname,
+      description: element.description,
+      destination: element.destination,
+      source: element.source
+    }).subscribe(data => {
+      alert(data.message);
+      this.getListVPS();
+      this.isLoadingResults = false;
+    },
+      err => {
+        alert(err.error.message);
+        this.getListVPS();
+        this.isLoadingResults = false;
+      }
+    )
   }
 
 }

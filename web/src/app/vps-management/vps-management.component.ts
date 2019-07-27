@@ -22,7 +22,7 @@ import { EditVpsModal } from '../modal_windows/edit-vps-modal.component'
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'progress', 'delete'];
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
@@ -32,7 +32,6 @@ export class VpsManagementComponent {
 
   ngOnInit() {
     this.getListVPS();
-
     // IP Address API request
     this.http.getIpAddress().subscribe(data => { this.ipAddress = data });
   }
@@ -46,7 +45,6 @@ export class VpsManagementComponent {
         arr.push(data[el]);
       }
       this.vps = arr;
-      console.log(`VPSLIST`, this.vps);
       this.dataSource = new MatTableDataSource(this.vps);
       this.isLoadingResults = false;
 
@@ -77,6 +75,37 @@ export class VpsManagementComponent {
   }
 
   deleteVps(hostname) {
-    console.log(hostname);
+    this.isLoadingResults = true;
+    this.http.deleteVPS({ hostname: hostname }).subscribe(data => {
+      console.log(data);
+      alert(data.message);
+      this.getListVPS();
+      this.isLoadingResults = false;
+    },
+      err => {
+        alert(err.error.message);
+        this.getListVPS();
+        this.isLoadingResults = false;
+      }
+    )
+  }
+
+
+  openSnackBar() {
+    this._bottomSheet.open(sshKeyOverview);
+  }
+}
+
+@Component({
+  selector: 'ssh-key-overview',
+  template: `
+  <p><b>{{key}}</b></p>
+`,
+})
+export class sshKeyOverview {
+
+  key: any;
+  constructor(private _bottomSheetRef: MatBottomSheetRef<VpsManagementComponent>, private http: RequestsService, ) {
+    this.http.getSSH().subscribe(data => this.key = data.pubkey)
   }
 }
