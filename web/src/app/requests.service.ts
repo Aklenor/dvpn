@@ -39,9 +39,11 @@ export class RequestsService {
   deleteRoute(data: any): Observable<any> {
     return this.http.post(`${this.url}\del_route`, data);
   }
-
-
   getSSH(): Observable<any> {
     return this.http.get(`${this.url}\getpubkey`);
+  }
+
+  getRoutes(): Observable<any> {
+    return this.http.get(`${this.url}\getroutes`);
   }
 }
