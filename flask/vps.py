@@ -53,7 +53,11 @@ def write_inventory(fileInv=fileInventory, VPS_dict=VPS_dict):
 def getAvailableId():
     global VPS_dict
 
-    IDs = [VPS_dict[host].get('host_id') for host in VPS_dict]
+    IDs = []
+    for host in VPS_dict:
+        if VPS_dict[host].get('host_id') != None:
+            IDs.append(VPS_dict[host].get('host_id'))
+
     if len(IDs) == 0:
         return 0
     findMinFreeElem = min( set(range(max(IDs)+2)) - set(IDs) )
@@ -114,58 +118,20 @@ def route( action, srcIP, hostname, destIP='0.0.0.0/0', description='' ):
         return jsonify({ 'status':'error',
             'message': "'"+ str(action) + "' is bad action" }), 200
 
-    # add route back on VPS
-    def setVpsRoute( hostname, source, action ):
-
-        # get copy of VPS variables
-        host_params = VPS_dict.get(hostname).copy()
-        host_params['routes'] = [ {'source':source} ]
-
-        if action == 'add':
-            ansibleTags = 'add_route'
-        else:
-            ansibleTags = 'del_route'
-
-        AnsibleExtraVars = json.dumps(host_params)
-        cmdAnsible = ['ansible-playbook','-i',fileInventory,
-                '--limit=' + str(hostname),'--tags', ansibleTags,
-                '--extra-vars', AnsibleExtraVars, setupPlaybook]
-        resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
-
-        # add ip route on IPCS
-        message = ''.join([ 'during run command: ', ' '.join(cmdAnsible),
-                            '\nRetrun Code: ', str(resAnsible.returncode),
-                            '\nstdout: ', resAnsible.stdout,
-                            '\nstderr: ', resAnsible.stderr ])
-
-        # print( 'resAnsible.stderr:', resAnsible.stderr )
-        # print('exists in inresAnsible.stderr:', 'exists' in resAnsible.stderr)
-        if resAnsible.returncode == 0 or 'exists' in resAnsible.stderr:
-            return {'status':'ok','message':message}
-        else:
-            return {'status':'error', 'message':message}
-
-    def isAllReturnStatusOk( resultList ):
-        return all([ result.get('status') == 'ok' for result in resultList]) 
-
     routed.keepClean()
 
     interface = VPS_dict[hostname].get('interface')
     route = destIP+' dev '+interface
     # print('route:', route, 'interface:', interface)
 
-    cmdResults = []
-    # cmdResults.append( setVpsRoute(hostname,srcIP,action) )
-
     if action == 'add':
         actResult = routed.add2Ctable(srcIP,route)
     else:
         actResult = routed.del2Ctable(srcIP,route)
 
-    cmdResults.append( actResult )
-    message = '\n'.join([ result.get('message') for result in cmdResults ])
+    message = actResult.get('message')
 
-    if isAllReturnStatusOk( cmdResults ):
+    if actResult.get('status') == 'ok':
         return jsonify({'status':'ok', 'message': message})
     else:
         return jsonify({'status':'error', 'message': message})
@@ -239,21 +205,15 @@ def del_vps( hostname ):
         return jsonify({"status":"error",
                         "message":"'" + str(hostname) + "' no such host"}), 500
 
-    def setRoute( hostname, source, action ):
+    def execAnsible( hostname ):
 
         # get copy of VPS variables
         host_params = VPS_dict.get(hostname).copy()
-        host_params['routes'] = [ {'source':source} ]
-
-        if action == 'add':
-            ansibleTags = 'add_route'
-        else:
-            ansibleTags = 'del_route'
 
         AnsibleExtraVars = json.dumps(host_params)
         cmdAnsible = ['ansible-playbook','-i',fileInventory,
-                '--limit=' + str(hostname),'--tags', ansibleTags,
-                '--extra-vars', AnsibleExtraVars, deletePlaybook]
+                '--limit=' + str(hostname),
+                deletePlaybook]
         resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
 
         # add ip route on IPCS
@@ -269,9 +229,13 @@ def del_vps( hostname ):
         else:
             return {'status':'error', 'message':message}
 
-    VPS_dict.pop(hostname)
-    write_inventory(VPS_dict=VPS_dict)
-    return jsonify({'status':'ok', 'message':'VPS is removed'}), 200
+    result = execAnsible( hostname )
+    if result.get('status') == 'error':
+        return jsonify(result)
+    else:
+        VPS_dict.pop(hostname)
+        write_inventory(VPS_dict=VPS_dict)
+        return jsonify({'status':'ok', 'message':'VPS is removed'}), 200
     # TODO add andible secure VPS wiping
     # TODO delete openvpn-client configuration!!!!
 

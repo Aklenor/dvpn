@@ -1,31 +1,22 @@
 - hosts: vps
   remote_user: root
   tasks:
-    - name: delete openvpn configs
-      command: srm -r  /etc/openvpn
-    - name: delete ansible home
-      command: srm -r /home/ansible
-    - name: delete ansible user
-      user:
-        name: ansible
-        remove: yes
-    - name: disable IP forwarding
-      sysctl:
-        name: net.ipv4.ip_forward
-        value: '0'
-        state: present
-    - name: flush iptables NAT
-      iptables:
-        table: nat
-        flush: yes
-        chain: POSTROUTING 
-    - name: remove packets
-      remote_user: root
-      package:
-        name:
-          - sudo
-          - openvpn
-          - secure-delete
-        state: absent
-    # - name: delete logs
-    #   command: srm -r /var/log 
+
+    - name: stop OpenVPN server for Systemd
+      become: yes
+      systemd:
+        name: openvpn-server@server.service
+        state: stopped
+        enabled: no
+        daemon_reload: yes
+      when: ansible_service_mgr == 'systemd'
+
+    - name: stop OpenVPN client for Systemd
+      become: yes
+      local_action:
+        module: systemd
+        state: stopped
+        enabled: no
+        daemon_reload: no
+        name: openvpn-client@{{ ansible_hostname }}.service
+      when: ansible_service_mgr == 'systemd'
