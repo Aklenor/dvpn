@@ -2,24 +2,7 @@
 import subprocess
 
 # client table
-Ctable={
-        '10.1.1.244':{
-            'tid':1,
-            'rule':"from 10.1.1.244 lookup 1",
-            'routes':{
-                'default': "default dev tun0 scope link",
-                '1.1.1.1': "1.1.1.1 dev tun1 scope link"
-                }
-            },
-        '10.1.1.243':{
-            'tid':2,
-            'rule':"from 10.1.1.243 lookup 2",
-            'routes':{
-                'default': "default dev tun2 scope link",
-                '8.8.8.8': "8.8.8.8 dev tun1 scope link"
-                }
-            }
-        }
+Ctable={}
 
 # TODO iproute2 can output json!!!!
 

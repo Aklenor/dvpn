@@ -1,23 +1,22 @@
-#/bin/env python
+#!/bin/env python
 
-from configparser import ConfigParser
-import yaml
-from flask import request, jsonify, json
 from threading import Thread
 import urllib.request as UR
 import ipaddress
 import subprocess
 import os
+from flask import jsonify, json
+import yaml
 import routed
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-work_dir = os.path.abspath(SCRIPT_DIR+'/..')
+WORK_DIR = os.path.abspath(SCRIPT_DIR+'/..')
 
 VPS_dict = {}
 
-fileInventory = work_dir+'/hosts.yml'
-setupPlaybook = work_dir+'/roles/setup.yml'
-deletePlaybook = work_dir+'/roles/delete.yml'
+fileInventory = WORK_DIR+'/hosts.yml'
+setupPlaybook = WORK_DIR+'/roles/setup.yml'
+deletePlaybook = WORK_DIR+'/roles/delete.yml'
 
 # read invtory file to global var: VPS_dict
 def read_inventory():
@@ -29,8 +28,9 @@ def read_inventory():
             print('Error while read inventory file\n',
                     exc)
             return
-    VPS_dict = inventory['all']['children']['vps']['hosts']  
-    return VPS_dict
+    VPS_dict = inventory['all']['children']['vps']['hosts']
+    if VPS_dict == None:
+        VPS_dict = {}
 
 def write_inventory(fileInv=fileInventory, VPS_dict=VPS_dict):
     # global VPS_dict
@@ -48,7 +48,7 @@ def write_inventory(fileInv=fileInventory, VPS_dict=VPS_dict):
             yaml.dump(inventory, stream, default_flow_style=False, allow_unicode=True)
         except yaml.YAMLError as exc:
             print('Error while write to inventory file',
-                    exc)
+                  exc)
 
 def getAvailableId():
     global VPS_dict
@@ -70,7 +70,7 @@ def getIpLocation(ip):
 
     try:
         response = UR.urlopen(url)
-    except: 
+    except:
         return {"status":"error", "message":"urllib.request.urlopen("+url+") catch exception"}
 
     data = json.load(response)
@@ -83,7 +83,7 @@ def getIpLocation(ip):
                 "city": data.get('city')}
 
 def route( action, srcIP, hostname, destIP='0.0.0.0/0', description='' ):
-    global VPS_dict 
+    global VPS_dict
 
     if type(hostname) is not str:
         return jsonify({ 'status':'error',
@@ -132,9 +132,9 @@ def route( action, srcIP, hostname, destIP='0.0.0.0/0', description='' ):
     message = actResult.get('message')
 
     if actResult.get('status') == 'ok':
-        return jsonify({'status':'ok', 'message': message})
+        return jsonify({'status':'ok', 'message': message}), 200
     else:
-        return jsonify({'status':'error', 'message': message})
+        return jsonify({'status':'error', 'message': message}), 400
 
 def check_vps( hostname, fileInventory=fileInventory, VPS_dict=VPS_dict ):
     # check for availability to work with ansible
@@ -151,7 +151,7 @@ def check_vps( hostname, fileInventory=fileInventory, VPS_dict=VPS_dict ):
     if resAnsible.returncode != 0:
         VPS_dict[hostname]['state'] = "unreachable"
     else:
-        VPS_dict[hostname]['state'] = "available" 
+        VPS_dict[hostname]['state'] = "available"
 
 def add_vps( hostname, parameters ):
     # check if hostname is exists
@@ -171,10 +171,11 @@ def add_vps( hostname, parameters ):
         for p in P:
             if P[p] == '':
                 parameters.pop(p)
+        parameters = P
 
     delEmptyParams(parameters)
     testVpsDict = {hostname:parameters}
-    test_inventory=work_dir+'/test.yml'
+    test_inventory=WORK_DIR+'/test.yml'
     write_inventory(test_inventory, testVpsDict)
 
     check_vps(hostname, test_inventory, testVpsDict)
@@ -186,7 +187,7 @@ def add_vps( hostname, parameters ):
     # id = getAvailableId()
     VPS_dict[hostname] = testVpsDict[hostname].copy()
 
-    host_params = VPS_dict.get(hostname)
+    host_params = VPS_dict.get(hostname,{})
     host_params['host_id'] = getAvailableId()
     host_params['interface'] ='tun'+str(host_params.get('host_id'))
     host_params['hostname'] = hostname
@@ -198,12 +199,11 @@ def add_vps( hostname, parameters ):
     write_inventory(VPS_dict=VPS_dict)
     return jsonify({"status":"ok", "message":"new host added"}), 200
 
-
 def del_vps( hostname ):
     global VPS_dict
     if hostname not in VPS_dict:
         return jsonify({"status":"error",
-                        "message":"'" + str(hostname) + "' no such host"}), 500
+                        "message":"'" + str(hostname) + "' no such host"}), 400
 
     def execAnsible( hostname ):
 
@@ -212,7 +212,7 @@ def del_vps( hostname ):
 
         AnsibleExtraVars = json.dumps(host_params)
         cmdAnsible = ['ansible-playbook','-i',fileInventory,
-                '--limit=' + str(hostname),
+                '--limit' , str(hostname),
                 deletePlaybook]
         resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
 
@@ -241,7 +241,7 @@ def del_vps( hostname ):
 
 def config_vps(hostname='vps'):
     global VPS_dict
-    
+
     def conf_one_vps( hostname ):
         hostname = str(hostname)
         global VPS_dict
@@ -255,18 +255,18 @@ def config_vps(hostname='vps'):
             return {'status':'error', 'message':'VPS is unreachable'}
 
         VPS_dict[hostname]['configured'] = 'in progress'
-        cmdAnsible = ['ansible-playbook','-i',fileInventory,'--limit=' + str(hostname),
-                    setupPlaybook]
+        cmdAnsible = ['ansible-playbook', '-i', fileInventory, '--limit', str(hostname),
+                      setupPlaybook]
         resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
 
-        if resAnsible.returncode != 0 :
+        if resAnsible.returncode != 0:
             print('Error during run command:', ' '.join(cmdAnsible),
                   '\nRetrun Code: ',    resAnsible.returncode,
                   '\nstdout: ',         resAnsible.stdout,
                   '\nstderr: ',         resAnsible.stderr)
             VPS_dict[hostname]['configured'] = 'no'
             write_inventory(VPS_dict=VPS_dict)
-            return { 'status':'error', 
+            return { 'status':'error',
                 'message': 'ansible-playbook return code: ' +
                 str(resAnsible.returncode) }
         else:
