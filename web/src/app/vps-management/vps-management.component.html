@@ -56,7 +56,7 @@
         <ng-container matColumnDef="progress">
             <th mat-header-cell *matHeaderCellDef> </th>
             <td mat-cell *matCellDef="let element">
-                <mat-spinner *ngIf="element.configured == 'in progress'" [diameter]='30'></mat-spinner>
+                <mat-spinner *ngIf="element.configured == 'in progress' || element.configured == 'in deletion'" [diameter]='30'></mat-spinner>
             </td>
         </ng-container>
 
@@ -70,7 +70,7 @@
 
         <ng-container matColumnDef="add">
             <th mat-header-cell *matHeaderCellDef> </th>
-            <td mat-cell *matCellDef="let element"><button class="add_outer_table_btn" (click)='openDialog(element.hostname)' mat-stroked-button><mat-icon>add</mat-icon></button>
+            <td mat-cell *matCellDef="let element"><button class="add_outer_table_btn" [disabled]="element.configured == 'in progress' || element.configured =='in deletion'" (click)='openDialog(element.hostname)' mat-stroked-button><mat-icon>add</mat-icon></button>
             </td>
         </ng-container>
 

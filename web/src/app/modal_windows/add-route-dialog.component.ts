@@ -38,7 +38,8 @@ export class AddRouteDialogComponent {
                 source: this.sourceFormControl.value,
                 description: this.descriptionFormControl.value
             }).subscribe((data) => {
-                alert(data.message);
+                // let message = "Status:" + data.status + 'Output:' + data.message;
+                alert("Route is added");
                 this.isLoading = false;
                 this.dialogRef.close();
             },
