@@ -1,0 +1,34 @@
+- name: copy zabbix-agent config 
+  template:
+    src: "zabbix_agentd.conf"
+    dest: "/etc/zabbix/"
+  tags: zabbix
+
+- name: start zabbix-agent
+  systemd:
+    name: zabbix-agent.service
+    state: restarted
+  tags: zabbix
+
+- name: add host 2 zabbix
+  local_action:
+    module: zabbix_host
+    server_url: "{{ zabbix_url }}"
+    login_user: Admin
+    login_password: zabbix
+    host_name: "{{ inventory_hostname }}"
+    host_groups:
+      - DVPN
+    link_templates:
+      - DVPN
+    status: enabled
+    state: present
+    inventory_mode: manual
+    interfaces:
+      - type: 1
+        main: 1
+        useip: 1
+        ip: "{{ ansible_default_ipv4.address }}"
+        dns: ""
+        port: 10050
+  tags: zabbix-add

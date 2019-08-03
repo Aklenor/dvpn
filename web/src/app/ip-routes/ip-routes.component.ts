@@ -62,7 +62,7 @@ export class IpRoutesComponent implements OnInit {
       destination: destination,
       source: source
     }).subscribe(data => {
-      alert(data.message);
+      alert("Route is deleted");
       this.getRoutes();
       this.isLoadingResults = false;
     },

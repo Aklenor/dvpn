@@ -1,0 +1,48 @@
+- hosts: vps
+  tasks:
+
+    - name: add host 2 zabbix
+      local_action:
+        module: zabbix_host
+        server_url: http://10.1.1.240/
+        login_user: Admin
+        login_password: zabbix
+        host_name: "{{ inventory_hostname }}"
+        host_groups:
+          - DVPN
+        link_templates:
+          - DVPN
+        status: enabled
+        state: present
+        inventory_mode: manual
+        interfaces:
+          - type: 1
+            main: 1
+            useip: 1
+            ip: "{{ ansible_default_ipv4.address }}"
+            dns: ""
+            port: 10050
+      tags: zabbix-add
+
+    - name: del host from zabbix
+      local_action:
+        module: zabbix_host
+        server_url: http://10.1.1.240/
+        login_user: Admin
+        login_password: zabbix
+        host_name: "{{ inventory_hostname }}"
+        host_groups:
+          - DVPN
+        link_templates:
+          - DVPN
+        status: disabled
+        state: absent
+        inventory_mode: manual
+        interfaces:
+          - type: 1
+            main: 1
+            useip: 1
+            ip: "{{ ansible_default_ipv4.address }}"
+            dns: ""
+            port: 10050
+      tags: zabbix-del

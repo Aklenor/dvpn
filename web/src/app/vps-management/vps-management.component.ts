@@ -52,7 +52,7 @@ export class VpsManagementComponent {
       this.isLoadingResults = false;
 
       for (let element in arr) {
-        if (arr[element].configured == 'in progress') {
+        if (arr[element].configured == 'in progress' || arr[element].configured == 'in deletion') {
           isThereProgress = true;
           if (!this.updDaemon) {
             this.updDaemon = window.setInterval(() => this.getListVPS(), 10000);
@@ -94,6 +94,8 @@ export class VpsManagementComponent {
   }
 
   deleteVps(hostname) {
+    var x = confirm("Are you sure you want to delete?");
+    if (x) {
     this.isLoadingResults = true;
     this.http.deleteVPS({ hostname: hostname }).subscribe(data => {
       alert(data.message);
@@ -107,7 +109,7 @@ export class VpsManagementComponent {
       }
     )
   }
-
+  }
 
   openSnackBar() {
     this._bottomSheet.open(sshKeyOverview);
