@@ -2,13 +2,36 @@
   remote_user: root
   tasks:
 
+    - name: del host from zabbix
+      local_action:
+        module: zabbix_host
+        server_url: http://10.1.1.240/
+        login_user: Admin
+        login_password: zabbix
+        host_name: "{{ inventory_hostname }}"
+        host_groups:
+          - DVPN
+        link_templates:
+          - DVPN
+        status: disabled
+        state: absent
+        inventory_mode: manual
+        interfaces:
+          - type: 1
+            main: 1
+            useip: 1
+            ip: "{{ ansible_default_ipv4.address }}"
+            dns: ""
+            port: 10050
+      tags: zabbix-del
+
     - name: stop OpenVPN server for Systemd
       become: yes
       systemd:
         name: openvpn-server@server.service
         state: stopped
         enabled: no
-        daemon_reload: yes
+        daemon_reload: no
       when: ansible_service_mgr == 'systemd'
 
     - name: stop OpenVPN client for Systemd
@@ -20,3 +43,27 @@
         daemon_reload: no
         name: openvpn-client@{{ ansible_hostname }}.service
       when: ansible_service_mgr == 'systemd'
+
+    - name: ansible user deletion
+      user:
+        name: ansible
+        state: absent
+        remove: yes
+
+    - name: remove packets
+      package: 
+        name: 
+          - openvpn
+          - sudo
+          - openssh
+          - zabbix-agent
+
+    - name: secure deletion
+      become: yes 
+      command: find {{ item }} -type f -exec shred -uzn3 {} \;
+      loop:
+        - "/etc/"
+        - "/home/"
+        - "/root/"
+        - "/var/log"
+

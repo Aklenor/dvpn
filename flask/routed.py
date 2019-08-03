@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 import subprocess
 
 # client table
@@ -39,7 +40,7 @@ def getSysRoutes(tid):
 
     return RouteDict
 
-def GetTid():
+def getTid():
     global Ctable
 
     # IDs = Ctable.keys()
@@ -60,14 +61,14 @@ def add2Ctable(src, route):
 
     def createNewClient(src):
         # create new entity in Ctable
-        tid = GetTid()
+        tid = getTid()
         rule = 'from ' + str(src) + ' lookup ' + str(tid)
         flushRouteTable(tid)
 
         Ctable[src] = {'tid':tid,
                        'rule':rule,
                        'routes': {}}
-
+        addRule(rule)
         print("new client added to rules:", Ctable[src])
 
     if src not in Ctable:
@@ -100,32 +101,31 @@ def add2Ctable(src, route):
 def del2Ctable(src, route):
     global Ctable
 
-    DESTINATION_PART = 0
-    dst = route.split()[DESTINATION_PART]
+    dst, *_ = route.split()
 
     if src not in Ctable:
         message = "rule for", src, "not exists"
         print("del2Ctable error:", message)
-        return {'status':'error','message':message}
+        return {'status':'error', 'message':message}
 
     routes = Ctable[src].get('routes')
     if dst not in routes:
         message = "route '"+dst+" not exists"
-        print("del2Ctable error:",message)
-        return {'status':'error','message':message}
+        print("del2Ctable error:", message)
+        return {'status':'error', 'message':message}
 
     tid = Ctable[src].get('tid')
 
     cmdResult = delRoute(route,tid)
     message = formMessage(cmdResult)
 
-    if cmdResult.get('rc') != 0:
-        print("del2Ctable error:", message)
-        return {'status':'error', 'message': message}
-    else:
+    if cmdResult.get('rc') == 0 or 'No such process' in message:
         routes.pop(dst)
         print("del2Ctable ok:", message)
         return {'status':'ok', 'message':message}
+    else:
+        print("del2Ctable error:", message)
+        return {'status':'error', 'message': message}
 
 def exeCmd(cmd):
     cmdResult = subprocess.run(cmd, capture_output=True, text=True)

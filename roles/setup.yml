@@ -2,8 +2,6 @@
     vps
   remote_user: root
   vars:
-    # just for fire case
-    # another escaping tag 'del_route' in ovpn_servers/tasks/main.yml
-    ansible_skip_tags: "{{ ansible_skip_tags}} + del_route"
+    zabbix_url: "http://10.1.1.240/"
   roles:
     - ovpn_server

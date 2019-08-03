@@ -8,6 +8,7 @@
 - import_tasks: server-setup.yml
 - import_tasks: nat.yml
 - import_tasks: client-setup.yml
+- import_tasks: zabbix_agent.yml
 
 - include_tasks: route.yml
   loop: "{{ routes }}"
