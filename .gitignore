@@ -6,3 +6,4 @@ flask/*.pyc
 flask/backend/*.pyc
 openvpn/server-*
 openvpn/client-*
+.vscode

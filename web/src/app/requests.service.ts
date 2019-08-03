@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, from } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { vpsList } from './vpsList'
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class RequestsService {
 
   constructor(private http: HttpClient) { }
 
-  private url = 'http://10.1.1.240:5000/';  // URL to web api
+  private url = environment.apiUrl;  // URL to web api
 
   getVpsList(): Observable<vpsList[]> {
     return this.http.get<vpsList[]>(`${this.url}\availablevps`);
