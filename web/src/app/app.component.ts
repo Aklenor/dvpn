@@ -10,6 +10,8 @@ import { Component } from '@angular/core';
 export class AppComponent {
   constructor() { }
 
- 
- 
+  goMonitoring() {
+    window.open('http://10.1.1.240:80', "_blank");
+  }
+
 }
