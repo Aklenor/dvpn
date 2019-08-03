@@ -2,5 +2,7 @@ todo
 test.*
 easyrsa/pki
 flask/venv
+flask/*.pyc
+flask/backend/*.pyc
 openvpn/server-*
 openvpn/client-*

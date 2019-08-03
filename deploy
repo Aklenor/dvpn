@@ -1,0 +1,41 @@
+#!/bin/bash
+# deploy zabbix
+
+sudo docker stop zabbix-postgres zabbix-server zabbix-web
+
+SERVER_IP="172.17.0.1"
+DB_PASSWD="dbpasswd"
+DB_USER="zabbix"
+
+# database
+sudo docker run \
+	--name zabbix-postgres \
+	--rm \
+	-p 5432:5432 \
+	-e POSTGRES_PASSWORD=$DB_PASSWD \
+	-e POSTGRES_USER=$DB_USER \
+	-e POSTGRES_DB="zabbix" \
+	-d postgres
+
+# zabbix-server
+sudo docker run \
+	--name zabbix-server \
+	--rm -it \
+	-p 10051:10051 \
+	-p 10050:10050 \
+	-e DB_SERVER_HOST=$SERVER_IP \
+	-e POSTGRES_USER=$DB_USER\
+	-e POSTGRES_PASSWORD=$DB_PASSWD \
+	-d zabbix/zabbix-server-pgsql:alpine-latest
+
+# zabbix-web
+sudo docker run \
+	--name zabbix-web \
+	-it --rm \
+	-p 80:80 -p 443:443 \
+	-e DB_SERVER_HOST=$SERVER_IP \
+	-e POSTGRES_USER=$DB_USER \
+	-e POSTGRES_PASSWORD=$DB_PASSWD \
+	-e ZBX_SERVER_HOST=$SERVER_IP \
+	-e PHP_TZ="UTC" \
+	-d zabbix/zabbix-web-nginx-pgsql:alpine-latest

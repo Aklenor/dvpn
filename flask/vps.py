@@ -94,6 +94,7 @@ def route( action, srcIP, hostname, destIP='0.0.0.0/0', description='' ):
             'message': "'" + hostname + "' is bad hostname" }), 400
 
     if type(srcIP) is not str or srcIP == '':
+
         return jsonify({ 'status':'error',
             'message': "requested source IP address is not string" }), 500
 
@@ -136,7 +137,7 @@ def route( action, srcIP, hostname, destIP='0.0.0.0/0', description='' ):
     else:
         return jsonify({'status':'error', 'message': message}), 400
 
-def check_vps( hostname, fileInventory=fileInventory, VPS_dict=VPS_dict ):
+def check_vps(hostname, fileInventory=fileInventory, VPS_dict=VPS_dict):
     # check for availability to work with ansible
 
     # global VPS_dict
@@ -153,7 +154,7 @@ def check_vps( hostname, fileInventory=fileInventory, VPS_dict=VPS_dict ):
     else:
         VPS_dict[hostname]['state'] = "available"
 
-def add_vps( hostname, parameters ):
+def add_vps(hostname, parameters):
     # check if hostname is exists
     # VPS_dict = inventory['all']['children']['vps']['hosts']
     global VPS_dict
@@ -199,45 +200,47 @@ def add_vps( hostname, parameters ):
     write_inventory(VPS_dict=VPS_dict)
     return jsonify({"status":"ok", "message":"new host added"}), 200
 
-def del_vps( hostname ):
+def del_vps(hostname):
     global VPS_dict
     if hostname not in VPS_dict:
         return jsonify({"status":"error",
                         "message":"'" + str(hostname) + "' no such host"}), 400
 
-    def execAnsible( hostname ):
+    def execDel(hostname):
+        hostname = str(hostname)
+        global VPS_dict
+        if hostname not in VPS_dict:
+            print( "'" + hostname + "' no such host" )
+            return {"status":"error",
+                            "message":"'" + hostname + "' no such host"}
 
-        # get copy of VPS variables
-        host_params = VPS_dict.get(hostname).copy()
+        if VPS_dict[hostname]['state'] != 'available':
+            print( "'" + hostname + "' host is unreachable" )
+            return {'status':'error', 'message':'VPS is unreachable'}
 
-        AnsibleExtraVars = json.dumps(host_params)
-        cmdAnsible = ['ansible-playbook','-i',fileInventory,
-                '--limit' , str(hostname),
-                deletePlaybook]
+        VPS_dict[hostname]['configured'] = 'in deletion'
+        cmdAnsible = ['ansible-playbook', '-i', fileInventory, '--limit', str(hostname),
+                        deletePlaybook]
         resAnsible = subprocess.run(cmdAnsible, capture_output=True, text=True)
 
-        # add ip route on IPCS
-        message = ''.join([ 'during run command: ', ' '.join(cmdAnsible),
-                            '\nRetrun Code: ', str(resAnsible.returncode),
-                            '\nstdout: ', resAnsible.stdout,
-                            '\nstderr: ', resAnsible.stderr ])
-
-        # print( 'resAnsible.stderr:', resAnsible.stderr )
-        # print('exists in inresAnsible.stderr:', 'exists' in resAnsible.stderr)
-        if resAnsible.returncode == 0 or 'exists' in resAnsible.stderr:
-            return {'status':'ok','message':message}
+        if resAnsible.returncode != 0:
+            print('Error during run command:', ' '.join(cmdAnsible),
+                    '\nRetrun Code: ',    resAnsible.returncode,
+                    '\nstdout: ',         resAnsible.stdout,
+                    '\nstderr: ',         resAnsible.stderr)
+            VPS_dict[hostname]['configured'] = 'deletion failed'
+            write_inventory(VPS_dict=VPS_dict)
+            return { 'status':'error',
+                'message': 'ansible-playbook return code: ' +
+                str(resAnsible.returncode) }
         else:
-            return {'status':'error', 'message':message}
+            VPS_dict.pop(hostname)
+            write_inventory(VPS_dict=VPS_dict)
+            return {'status':'ok', 'message':'VPS is removed'}
 
-    result = execAnsible( hostname )
-    if result.get('status') == 'error':
-        return jsonify(result)
-    else:
-        VPS_dict.pop(hostname)
-        write_inventory(VPS_dict=VPS_dict)
-        return jsonify({'status':'ok', 'message':'VPS is removed'}), 200
-    # TODO add andible secure VPS wiping
-    # TODO delete openvpn-client configuration!!!!
+    deleteThread = Thread(target=execDel, args=(hostname,))
+    deleteThread.start()
+    return jsonify({'status':'ok', 'message':'VPS in removing process'}), 200
 
 def config_vps(hostname='vps'):
     global VPS_dict
@@ -245,7 +248,7 @@ def config_vps(hostname='vps'):
     def conf_one_vps( hostname ):
         hostname = str(hostname)
         global VPS_dict
-        if hostname not in VPS_dict or not 'vps':
+        if hostname not in VPS_dict:
             print( "'" + hostname + "' no such host" )
             return {"status":"error",
                             "message":"'" + hostname + "' no such host"}
@@ -273,8 +276,6 @@ def config_vps(hostname='vps'):
             VPS_dict[hostname]['configured'] = 'yes'
             write_inventory(VPS_dict=VPS_dict)
             return {'status':'ok', 'message':'VPS is configured'}
-
-    # TODO parse playbook output to change VPS_dict[hostname]['configured'] status
 
     def conf_all_vps():
         global VPS_dict
@@ -307,8 +308,8 @@ def formRouteList():
     # TODO rename vars!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     routed.keepClean()
     Ctable = routed.Ctable
-    print('Ctable',Ctable)
-    inf2hn = { VPS_dict[hn].get('interface'):VPS_dict[hn] for hn in VPS_dict }
+    print('Ctable', Ctable)
+    inf2hn = {VPS_dict[hn].get('interface'):VPS_dict[hn] for hn in VPS_dict}
 
     clients = []
     for src, params in Ctable.items():
