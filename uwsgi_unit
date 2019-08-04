@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve dvpn
+After=network.target
+
+[Service]
+User=gib
+Group=www-data
+WorkingDirectory=/home/gib/dvpn/flask
+Environment="PATH=/home/gib/dvpn/env/bin:/home/gib/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+ExecStart=/home/gib/dvpn/env/bin/uwsgi --ini uwsgi.ini
+
+[Install]
+WantedBy=multi-user.target
