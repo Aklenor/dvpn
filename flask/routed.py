@@ -31,7 +31,7 @@ def getSysRules(tid=None):
     ruleList=[]
     for rule in sysRuleList:
         rule = rule.split('\t')[RULE_PART].strip(' ')
-        if rule.r not in default_rules:
+        if rule not in default_rules:
             ruleList.append(rule)
 
     return ruleList

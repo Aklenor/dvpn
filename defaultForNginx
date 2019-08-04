@@ -1,0 +1,61 @@
+server {
+    #add_header Access-Control-Allow-Origin *;
+    listen 5000;
+    #server_name your_domain www.your_domain;
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:/home/gib/dvpn/flask/flask.sock;
+    }
+}
+
+
+server {
+        listen 80;
+
+        #add_header Access-Control-Allow-Origin *;
+
+        server_name _;
+
+        root /home/gib/dvpn/web/dist/web;
+        index index.html;
+
+    location ~ ^/\.js(/|$) {
+                try_files $uri $uri/ =404;
+    }
+
+    location / {
+                try_files $uri /index.html$is_args$args;
+    }
+}
+
+server {
+    listen       8080;
+    server_name  localhost;
+    root /usr/share/zabbix;
+
+    location / {
+    index index.php index.html index.htm;
+    }
+
+    location ~ \.php$ {
+    fastcgi_pass unix:/run/php/php7.2-fpm.sock; # check this path, for different versions of php it will be different
+    fastcgi_index index.php;
+    fastcgi_param SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+    include fastcgi_params;
+    fastcgi_param PHP_VALUE "
+    max_execution_time = 300
+    memory_limit = 128M
+    post_max_size = 16M
+    upload_max_filesize = 2M
+    max_input_time = 300
+    date.timezone = Europe/Moscow
+    always_populate_raw_post_data = -1
+    ";
+    fastcgi_buffers 8 256k;
+    fastcgi_buffer_size 128k;
+    fastcgi_intercept_errors on;
+    fastcgi_busy_buffers_size 256k;
+    fastcgi_temp_file_write_size 256k;
+        }
+}
