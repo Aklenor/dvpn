@@ -23,22 +23,22 @@ export class RequestsService {
   }
 
   addVPS(data: any): Observable<any> {
-    return this.http.post(`${this.url}\add_vps`, data);
+    return this.http.post(`${this.url}add_vps`, data);
   }
 
   addRoute(data: any): Observable<any> {
-    return this.http.post(`${this.url}\add_route`, data);
+    return this.http.post(`${this.url}add_route`, data);
   }
 
   deleteVPS(data: any): Observable<any> {
-    return this.http.post(`${this.url}\del_vps`, data);
+    return this.http.post(`${this.url}del_vps`, data);
   }
 
   deleteRoute(data: any): Observable<any> {
-    return this.http.post(`${this.url}\del_route`, data);
+    return this.http.post(`${this.url}del_route`, data);
   }
   getSSH(): Observable<any> {
-    return this.http.get(`${this.url}\getpubkey`);
+    return this.http.get(`${this.url}getpubkey`);
   }
 
   getRoutes(): Observable<any> {
