@@ -32,7 +32,7 @@ sudo docker run \
 sudo docker run \
 	--name zabbix-web \
 	-it --rm \
-	-p 80:80 -p 443:443 \
+	-p 8080:80 -p 8443:443 \
 	-e DB_SERVER_HOST=$SERVER_IP \
 	-e POSTGRES_USER=$DB_USER \
 	-e POSTGRES_PASSWORD=$DB_PASSWD \

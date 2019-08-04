@@ -33,6 +33,7 @@
         enabled: no
         daemon_reload: no
       when: ansible_service_mgr == 'systemd'
+      ignore_errors: yes
 
     - name: stop OpenVPN client for Systemd
       become: yes
@@ -49,21 +50,22 @@
         name: ansible
         state: absent
         remove: yes
+      ignore_errors: yes
 
     - name: remove packets
       package: 
         name: 
           - openvpn
           - sudo
-          - openssh
           - zabbix-agent
+      ignore_errors: yes
 
     - name: secure deletion
       become: yes 
       command: find {{ item }} -type f -exec shred -uzn3 {} \;
       loop:
-        - "/etc/"
+        # - "/etc/"
         - "/home/"
-        - "/root/"
-        - "/var/log"
+        # - "/root/"
+        # - "/var/log"
 

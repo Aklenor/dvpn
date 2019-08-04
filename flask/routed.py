@@ -19,14 +19,21 @@ def getSysRules(tid=None):
     sysRuleList.remove('')
 
     # remove system rules from list:
-    default_rules = ['0:\tfrom all lookup local',
-                     '32766:\tfrom all lookup main',
-                     '32767:\tfrom all lookup default']
+    default_rules = ['from all lookup local',
+                     'from all lookup main',
+                     'from all lookup default']
 
     PRIORITY_PART = 0
     RULE_PART= 1
 
-    ruleList = [rule.split('\t')[RULE_PART] for rule in sysRuleList if rule not in default_rules]
+    # ruleList = [rule.split('\t')[RULE_PART] for rule in sysRuleList if rule not in default_rules]
+    # ruleList = [rule.split('\t')[RULE_PART] for rule in sysRuleList ]
+    ruleList=[]
+    for rule in sysRuleList:
+        rule = rule.split('\t')[RULE_PART]
+        if rule not in default_rules:
+            ruleList.append(rule)
+
     return ruleList
 
 def getSysRoutes(tid):
