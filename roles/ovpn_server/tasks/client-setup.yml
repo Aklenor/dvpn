@@ -14,7 +14,7 @@
   local_action:
     module: template
     src: client.ovpn
-    dest: "/etc/openvpn/client/{{ ansible_hostname }}.conf"
+    dest: "/etc/openvpn/client/{{ inventory_hostname }}.conf"
     force: yes
 
 - name: start OpenVPN client for Systemd
@@ -24,5 +24,5 @@
     state: restarted
     enabled: yes
     daemon_reload: yes
-    name: openvpn-client@{{ ansible_hostname }}.service
+    name: openvpn-client@{{ inventory_hostname }}.service
   when: ansible_service_mgr == 'systemd'

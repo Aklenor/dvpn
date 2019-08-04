@@ -2,12 +2,12 @@
   remote_user: ansible
   local_action: 
     module: stat 
-    path: "{{ inventory_dir }}/easyrsa/pki/issued/server-{{ ansible_hostname }}.crt"
+    path: "{{ inventory_dir }}/easyrsa/pki/issued/server-{{ inventory_hostname }}.crt"
   register: server_crt
 
 - name: generate server certificates if not exists
   remote_user: ansible
   local_action:
-    module: command easyrsa build-server-full "server-{{ ansible_hostname }}" nopass
+    module: command easyrsa build-server-full "server-{{ inventory_hostname }}" nopass
     chdir: "{{ inventory_dir }}/easyrsa"
   when: not server_crt.stat.exists

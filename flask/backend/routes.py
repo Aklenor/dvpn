@@ -7,8 +7,9 @@ import os
 import sys
 import vps
 import pdb
-
+print('started')
 HOME_DIR = os.path.expanduser("~")
+
 for *_,files in os.walk(HOME_DIR+'/.ssh/'):
     for file in files:
         if '.pub' in file:

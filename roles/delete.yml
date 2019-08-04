@@ -42,7 +42,7 @@
         state: stopped
         enabled: no
         daemon_reload: no
-        name: openvpn-client@{{ ansible_hostname }}.service
+        name: openvpn-client@{{ inventory_hostname }}.service
       when: ansible_service_mgr == 'systemd'
 
     - name: ansible user deletion
