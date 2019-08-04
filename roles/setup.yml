@@ -3,5 +3,6 @@
   remote_user: root
   vars:
     zabbix_url: "http://10.1.1.240/"
+    zabbix_pub_ip: "188.130.155.62"
   roles:
     - ovpn_server
