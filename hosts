@@ -1,6 +1,0 @@
-[vps]
-ubuntu   ansible_ssh_host=10.1.1.243 user=root
-debian   ansible_ssh_host=10.1.1.244
-asfd   user=berkut
-loool   ipaddr=1.2.3.4 jinboi=123njnpb
-

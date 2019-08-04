@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RequestsService } from '../requests.service';
-import { vpsList } from '../vpsList';
 import { MatDialog } from '@angular/material/dialog';
-import { AddRouteDialogComponent } from '../modal_windows/add-route-dialog.component';
 
 @Component({
   selector: 'app-ip-routes',
@@ -56,22 +54,25 @@ export class IpRoutesComponent implements OnInit {
 
 
   deleteRoute(source, destination, hostname) {
-    this.isLoadingResults = true;
-    this.http.deleteRoute({
-      hostname: hostname,
-      destination: destination,
-      source: source
-    }).subscribe(data => {
-      alert("Route is deleted");
-      this.getRoutes();
-      this.isLoadingResults = false;
-    },
-      err => {
-        alert(err.error.message);
+    var x = confirm("Are you sure you want to delete?");
+    if (x) {
+      this.isLoadingResults = true;
+      this.http.deleteRoute({
+        hostname: hostname,
+        destination: destination,
+        source: source
+      }).subscribe(data => {
+        alert("Route is deleted");
         this.getRoutes();
         this.isLoadingResults = false;
-      }
-    )
+      },
+        err => {
+          alert(err.error.message);
+          this.getRoutes();
+          this.isLoadingResults = false;
+        }
+      )
+    }
   }
 
 }

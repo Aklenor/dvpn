@@ -24,14 +24,14 @@ def getSysRules(tid=None):
                      'from all lookup default']
 
     PRIORITY_PART = 0
-    RULE_PART= 1
+    RULE_PART =  1
 
     # ruleList = [rule.split('\t')[RULE_PART] for rule in sysRuleList if rule not in default_rules]
     # ruleList = [rule.split('\t')[RULE_PART] for rule in sysRuleList ]
     ruleList=[]
     for rule in sysRuleList:
-        rule = rule.split('\t')[RULE_PART]
-        if rule not in default_rules:
+        rule = rule.split('\t')[RULE_PART].strip(' ')
+        if rule.r not in default_rules:
             ruleList.append(rule)
 
     return ruleList

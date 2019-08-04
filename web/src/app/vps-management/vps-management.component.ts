@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { RequestsService } from '../requests.service';
 import { vpsList } from '../vpsList';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+// import { animate, state, style, transition, trigger } from '@angular/animations';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { EditVpsModal } from '../modal_windows/edit-vps-modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,19 +13,19 @@ import { AddRouteDialogComponent } from '../modal_windows/add-route-dialog.compo
   selector: 'app-vps-management',
   templateUrl: './vps-management.component.html',
   styleUrls: ['./vps-management.component.css'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({ height: '0px', minHeight: '0' })),
-      state('expanded', style({ height: '*' })),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
+  // animations: [
+  //   trigger('detailExpand', [
+  //     state('collapsed', style({ height: '0px', minHeight: '0' })),
+  //     state('expanded', style({ height: '*' })),
+  //     transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+  //   ]),
+  // ],
 })
 
 export class VpsManagementComponent {
 
   vps: vpsList[] = [];
-  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'progress', 'add' ,'delete'];
+  displayedColumns: string[] = ['hostname', 'interface', 'ip', 'location', 'status', 'configured', 'progress', 'add', 'delete'];
   dataSource;
   isLoadingResults = true;
   ipAddress: any;
@@ -87,7 +87,7 @@ export class VpsManagementComponent {
     );
 
   }
-  
+
 
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
@@ -96,19 +96,19 @@ export class VpsManagementComponent {
   deleteVps(hostname) {
     var x = confirm("Are you sure you want to delete?");
     if (x) {
-    this.isLoadingResults = true;
-    this.http.deleteVPS({ hostname: hostname }).subscribe(data => {
-      alert(data.message);
-      this.getListVPS();
-      this.isLoadingResults = false;
-    },
-      err => {
-        alert(err.error.message);
+      this.isLoadingResults = true;
+      this.http.deleteVPS({ hostname: hostname }).subscribe(data => {
+        alert(data.message);
         this.getListVPS();
         this.isLoadingResults = false;
-      }
-    )
-  }
+      },
+        err => {
+          alert(err.error.message);
+          this.getListVPS();
+          this.isLoadingResults = false;
+        }
+      )
+    }
   }
 
   openSnackBar() {
