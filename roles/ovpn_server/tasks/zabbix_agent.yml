@@ -17,10 +17,6 @@
     login_user: Admin
     login_password: zabbix
     host_name: "{{ inventory_hostname }}"
-    host_groups:
-      - DVPN
-    link_templates:
-      - DVPN
     status: enabled
     state: present
     inventory_mode: manual
