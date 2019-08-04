@@ -8,7 +8,12 @@ import sys
 import vps
 import pdb
 
-ansible_playbook = 'roles/setup.yml'
+HOME_DIR = os.path.expanduser("~")
+for *_,files in os.walk(HOME_DIR+'/.ssh/'):
+    for file in files:
+        if '.pub' in file:
+            SSH_KEY_FILE_PATH = HOME_DIR+'/.ssh/'+file
+
 vps.read_inventory()
 print('ready to go')
 
@@ -30,9 +35,8 @@ def routes():
 
 @app.route('/getpubkey', methods=['GET'])
 def getPubKey():
-    pubKeypath = '/home/berkut/.ssh/id_ecdsa.pub'
-    with open(pubKeypath, 'r') as stream:
-           pubkey = stream.readlines() 
+    with open(SSH_KEY_FILE_PATH, 'r') as stream:
+           pubkey = stream.readlines()
 
     return jsonify({'pubkey':pubkey}), 200
 
