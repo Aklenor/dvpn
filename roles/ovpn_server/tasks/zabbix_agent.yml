@@ -17,6 +17,8 @@
     login_user: Admin
     login_password: zabbix
     host_name: "{{ inventory_hostname }}"
+    host_groups:
+     - "Linux servers"
     status: enabled
     state: present
     inventory_mode: manual
